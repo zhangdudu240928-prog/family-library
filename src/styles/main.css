@@ -490,12 +490,11 @@ ul { list-style: none; }
   /* 隐藏侧边栏，改为底部导航 */
   .sidebar { display: none; }
 
-  /* 主区域全宽，留底部导航空间 */
-  .main { width: 100vw; }
-  body { overflow: auto; }
-  .app { height: auto; min-height: 100vh; overflow: visible; }
-  .main { overflow: visible; }
-  .page-area { padding: 16px 14px 80px; overflow: visible; flex: none; }
+  /* 主区域全宽，保持原有 flex 布局，仅调整滚动方向 */
+  .main { width: 100vw; overflow: hidden; }
+  body { overflow: hidden; }
+  .app { height: 100vh; min-height: 100vh; overflow: hidden; }
+  .page-area { padding: 16px 14px 80px; overflow-y: auto; flex: 1; }
 
   /* 顶栏精简 */
   .topbar { padding: 0 14px; gap: 8px; height: 52px; }
@@ -537,7 +536,9 @@ ul { list-style: none; }
   .books-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .book-cover { height: 120px; }
 
-  /* 阅读记录 */
+  /* 阅读记录页 */
+  #page-logs { min-height: 0; }
+  .log-list { display: flex; flex-direction: column; gap: 8px; }
   .log-item { padding: 12px; gap: 10px; }
 
   /* 读者页面 */
