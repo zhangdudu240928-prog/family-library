@@ -43,7 +43,7 @@
 
       <div class="nav-section">工具</div>
       <div class="nav-item" data-page="settings">
-        <span class="ni">⚙️</span><span>设置 / 备份</span>
+        <span class="ni">⚙️</span><span>设置 / 同步</span>
       </div>
     </nav>
 
@@ -175,7 +175,6 @@
             <div><div class="rp-stat-num rp-num-rating">—</div><div class="rp-stat-lbl">平均评分</div></div>
           </div>
         </div>
-
         <div class="section-hd" style="margin-top:6px;">
           <div>
             <div class="section-title">🦔 图图馆长的推荐</div>
@@ -183,7 +182,6 @@
           </div>
         </div>
         <div class="rec-list" style="margin-bottom:24px;"></div>
-
         <div class="section-hd">
           <div class="section-title">✅ 已读完的书</div>
         </div>
@@ -205,7 +203,6 @@
             <div><div class="rp-stat-num rp-num-rating">—</div><div class="rp-stat-lbl">平均评分</div></div>
           </div>
         </div>
-
         <div class="section-hd" style="margin-top:6px;">
           <div>
             <div class="section-title">🦔 图图馆长的推荐</div>
@@ -213,7 +210,6 @@
           </div>
         </div>
         <div class="rec-list" style="margin-bottom:24px;"></div>
-
         <div class="section-hd">
           <div class="section-title">✅ 已读完的书</div>
         </div>
@@ -232,28 +228,90 @@
         <div id="logs-list" class="log-list"></div>
       </div>
 
-      <!-- ── 设置 ──────────────────────────────── -->
+      <!-- ── 设置 / 同步 ──────────────────────── -->
       <div class="page" id="page-settings">
-        <div style="max-width:500px;">
-          <div class="card" style="margin-bottom:14px;">
-            <div class="section-hd" style="margin-bottom:12px;">
-              <div class="section-title">💾 导出备份</div>
-            </div>
-            <p style="font-size:13px;color:var(--text-muted);line-height:1.7;margin-bottom:14px;">将所有书籍、阅读记录导出为 JSON 文件，可用于恢复。</p>
-            <button class="btn btn-primary" id="btn-export">⬇ 导出全部数据</button>
-          </div>
+        <div style="max-width:680px;display:flex;flex-direction:column;gap:14px;">
+
+          <!-- 飞书多维表格同步说明 -->
           <div class="card">
             <div class="section-hd" style="margin-bottom:12px;">
-              <div class="section-title">📥 导入恢复</div>
+              <div class="section-title">🗂️ 飞书多维表格 · 数据同步</div>
             </div>
-            <p style="font-size:13px;color:var(--text-muted);line-height:1.7;margin-bottom:14px;">从备份文件恢复，<strong style="color:#c05050;">将覆盖当前数据</strong>。</p>
-            <input type="file" id="import-file" accept=".json" style="display:none" />
-            <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
-              <button class="btn btn-outline btn-sm" onclick="document.getElementById('import-file').click()">选择文件</button>
-              <span id="import-filename" style="font-size:12px;color:var(--text-muted);">未选择</span>
+            <div class="feishu-guide">
+              <div class="feishu-guide-step">
+                <div class="fgs-num">①</div>
+                <div class="fgs-text">
+                  <strong>在飞书新建多维表格</strong>，命名为"图图家庭图书馆"，创建两个数据表：<code>📚 书籍台账</code> 和 <code>📖 阅读记录</code>
+                </div>
+              </div>
+              <div class="feishu-guide-step">
+                <div class="fgs-num">②</div>
+                <div class="fgs-text">
+                  <strong>点击下方按钮导出 CSV</strong>，分别下载书籍台账和阅读记录
+                </div>
+              </div>
+              <div class="feishu-guide-step">
+                <div class="fgs-num">③</div>
+                <div class="fgs-text">
+                  <strong>在飞书多维表格里</strong>，点右上角"···" → "导入" → 选择对应 CSV 文件，即可一键导入
+                </div>
+              </div>
+              <div class="feishu-guide-step">
+                <div class="fgs-num">④</div>
+                <div class="fgs-text">
+                  <strong>之后每次录入新书后</strong>，重新导出 CSV 覆盖即可同步；或在飞书里直接手动添加
+                </div>
+              </div>
             </div>
-            <button class="btn btn-danger" id="btn-import" disabled>⬆ 导入并覆盖</button>
+            <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
+              <button class="btn btn-primary" id="btn-export-books-csv">📊 导出书籍台账 CSV</button>
+              <button class="btn btn-outline" id="btn-export-logs-csv">📋 导出阅读记录 CSV</button>
+            </div>
           </div>
+
+          <!-- NFC 快速登记链接 -->
+          <div class="card">
+            <div class="section-hd" style="margin-bottom:12px;">
+              <div class="section-title">📡 NFC 快速登记链接</div>
+              <div class="section-sub">将链接写入 NFC 贴纸，孩子碰一下手表就能登记</div>
+            </div>
+            <div class="feishu-guide" style="margin-bottom:14px;">
+              <div class="feishu-guide-step">
+                <div class="fgs-num">①</div>
+                <div class="fgs-text">淘宝购买 <strong>NFC NTAG213 贴纸</strong>（约 ¥0.5/枚），贴在书的背面</div>
+              </div>
+              <div class="feishu-guide-step">
+                <div class="fgs-num">②</div>
+                <div class="fgs-text">手机安装 <strong>NFC Tools</strong>（iOS/安卓均有），选"写入" → "URL" → 粘贴下方对应书的链接</div>
+              </div>
+              <div class="feishu-guide-step">
+                <div class="fgs-num">③</div>
+                <div class="fgs-text">孩子用<strong>华为手表碰一下书背面的贴纸</strong>，手机/手表弹出页面，点击选择自己的头像和状态，完成！</div>
+              </div>
+            </div>
+            <div id="nfc-book-list" style="display:flex;flex-direction:column;gap:6px;"></div>
+          </div>
+
+          <!-- 备份恢复 -->
+          <div class="card">
+            <div class="section-hd" style="margin-bottom:12px;">
+              <div class="section-title">💾 本地备份 / 恢复</div>
+            </div>
+            <p style="font-size:13px;color:var(--text-muted);line-height:1.7;margin-bottom:14px;">导出完整 JSON 备份，换设备或清除浏览器缓存后可恢复所有数据。</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+              <button class="btn btn-outline" id="btn-export">⬇ 导出 JSON 备份</button>
+            </div>
+            <div style="border-top:1px solid var(--border);padding-top:14px;">
+              <div style="font-size:13px;color:var(--text-muted);margin-bottom:10px;">从备份文件恢复，<strong style="color:#c05050;">将覆盖当前数据</strong>。</div>
+              <input type="file" id="import-file" accept=".json" style="display:none" />
+              <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
+                <button class="btn btn-ghost btn-sm" onclick="document.getElementById('import-file').click()">选择文件</button>
+                <span id="import-filename" style="font-size:12px;color:var(--text-muted);">未选择</span>
+              </div>
+              <button class="btn btn-danger" id="btn-import" disabled>⬆ 导入并覆盖</button>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -382,6 +440,17 @@
       <button class="btn btn-outline" data-close-modal="modal-add-log">取消</button>
       <button class="btn btn-primary" id="btn-save-log">保存记录</button>
     </div>
+  </div>
+</div>
+
+<!-- ── Modal：快速登记（NFC / 孩子端）──────────── -->
+<div class="overlay" id="modal-quick-log">
+  <div class="modal modal-quick">
+    <div class="modal-hd">
+      <div class="modal-title">📚 快速登记</div>
+      <span class="modal-close" data-close-modal="modal-quick-log">✕</span>
+    </div>
+    <div id="quick-log-body"></div>
   </div>
 </div>
 

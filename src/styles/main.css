@@ -395,6 +395,80 @@ ul { list-style: none; }
 .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 18px 20px; }
 .card + .card { margin-top: 12px; }
 
+/* ─── 飞书导入指南 ──────────────────────────────── */
+.feishu-guide { display: flex; flex-direction: column; gap: 10px; }
+.feishu-guide-step { display: flex; align-items: flex-start; gap: 12px; }
+.fgs-num {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--brown-pale); color: var(--brown-dark);
+  font-size: 12px; font-weight: bold;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 1px;
+}
+.fgs-text { font-size: 13px; color: var(--text-secondary); line-height: 1.7; }
+.fgs-text code { background: var(--bg-hover); padding: 1px 6px; border-radius: 4px; font-size: 12px; color: var(--brown-dark); }
+.fgs-text strong { color: var(--text-primary); }
+
+/* ─── NFC 书单列表 ──────────────────────────────── */
+.nfc-list-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; background: var(--bg); border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+.nfc-spine { width: 6px; height: 36px; border-radius: 3px; flex-shrink: 0; }
+
+/* ─── 快速登记 Modal ─────────────────────────────── */
+.modal-quick { max-width: 420px; }
+
+.quick-book-info {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 16px 0 20px; text-align: center;
+}
+.quick-book-cover {
+  width: 70px; height: 96px;
+  border-radius: 4px 10px 10px 4px;
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(255,255,255,0.9); font-size: 11px;
+  font-family: var(--font-serif); text-align: center; padding: 8px;
+  box-shadow: var(--shadow-md); margin-bottom: 12px;
+}
+.quick-book-name { font-family: var(--font-serif); font-size: 17px; font-weight: bold; color: var(--brown-dark); }
+.quick-book-author { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+
+.quick-section-label {
+  font-size: 12px; text-transform: uppercase; letter-spacing: 1px;
+  color: var(--text-muted); margin-bottom: 12px;
+}
+
+.quick-reader-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.quick-reader-btn {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 8px; padding: 16px 20px;
+  background: var(--bg); border: 2px solid var(--border);
+  border-radius: var(--radius-md); cursor: pointer;
+  transition: all var(--transition); min-width: 100px;
+}
+.quick-reader-btn:hover { border-color: var(--brown-light); background: var(--bg-hover); }
+.quick-reader-btn.selected {
+  border-color: var(--reader-color, var(--brown));
+  background: color-mix(in srgb, var(--reader-color, var(--brown)) 10%, transparent);
+}
+.quick-reader-avatar { font-size: 36px; line-height: 1; }
+.quick-reader-name { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+
+.quick-action-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 4px; }
+.quick-action-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 20px 12px; border-radius: var(--radius-md);
+  border: 2px solid var(--border); cursor: pointer;
+  transition: all var(--transition); background: var(--bg);
+}
+.quick-action-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.quick-action-btn.reading:hover { border-color: var(--brown-light); background: var(--bg-hover); }
+.quick-action-btn.finished:hover { border-color: var(--green); background: var(--green-pale); }
+.quick-action-icon { font-size: 32px; }
+.quick-action-btn span:last-child { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+
 /* ─── Responsive ─────────────────────────────── */
 @media (max-width: 900px) {
   .stats-row { grid-template-columns: repeat(2, 1fr); }

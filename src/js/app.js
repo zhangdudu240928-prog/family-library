@@ -1,13 +1,15 @@
 /**
  * 家庭图书馆 · 图图馆长 · 主应用
  */
-import { booksDB, readersDB, logDB, librarianDB, exportData, importData, generateRecommendations } from './db.js';
+import { booksDB, readersDB, logDB, librarianDB, exportData, importData,
+  generateRecommendations, exportBooksCSV, exportLogsCSV,
+  parseNFCFromURL, generateNFCUrl } from './db.js';
 
 // ── 状态 ─────────────────────────────────────
 let currentPage = 'dashboard';
-let currentReader = null;   // null = 全家视角
+let currentReader = null;
 let bookFilter = 'all';
-let bookView = 'grid';      // grid | list
+let bookView = 'grid';
 let addBookTags = [];
 let importFileData = null;
 
@@ -23,8 +25,21 @@ document.addEventListener('DOMContentLoaded', () => {
   bindAddLog();
   bindModals();
   bindExport();
+  bindSettings();
+  checkNFCEntry(); // 检测 NFC 跳转
   renderAll();
 });
+
+// ── NFC 跳转检测 ──────────────────────────────
+function checkNFCEntry() {
+  const nfc = parseNFCFromURL();
+  if (nfc) {
+    // 直接打开快速登记 Modal
+    setTimeout(() => openQuickLog(nfc.bookId), 100);
+    // 清除 hash，避免刷新重复触发
+    history.replaceState(null, '', window.location.pathname);
+  }
+}
 
 // ── 渲染总入口 ────────────────────────────────
 function renderAll() {
@@ -35,6 +50,7 @@ function renderAll() {
   if (currentPage === 'jiejie') renderReaderPage('jiejie');
   if (currentPage === 'didi') renderReaderPage('didi');
   if (currentPage === 'logs') renderLogs();
+  if (currentPage === 'settings') renderSettings();
 }
 
 // ── 导航 ─────────────────────────────────────
@@ -54,7 +70,11 @@ function goPage(page) {
     el.classList.toggle('active', key === page);
   });
   document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === `page-${page}`));
-  const titles = { dashboard: '图图馆长的书房', books: '藏书阁', jiejie: '姐姐的书单', didi: '弟弟的书单', logs: '阅读记录', settings: '设置' };
+  const titles = {
+    dashboard: '图图馆长的书房', books: '藏书阁',
+    jiejie: '姐姐的书单', didi: '弟弟的书单',
+    logs: '阅读记录', settings: '设置 / 同步',
+  };
   document.getElementById('page-title').textContent = titles[page] || page;
   const addBtn = document.getElementById('btn-topbar-add');
   if (page === 'books') { addBtn.style.display = 'flex'; addBtn.textContent = '＋ 录入新书'; addBtn.onclick = () => openAddBook(); }
@@ -65,11 +85,12 @@ function goPage(page) {
   if (page === 'jiejie') renderReaderPage('jiejie');
   if (page === 'didi') renderReaderPage('didi');
   if (page === 'logs') renderLogs();
+  if (page === 'settings') renderSettings();
 }
 
 function bindSidebar() {
-  document.getElementById('btn-add-book-sidebar').addEventListener('click', () => { openAddBook(); });
-  document.getElementById('btn-add-log-sidebar').addEventListener('click', () => { openAddLog(); });
+  document.getElementById('btn-add-book-sidebar').addEventListener('click', () => openAddBook());
+  document.getElementById('btn-add-log-sidebar').addEventListener('click', () => openAddLog());
 }
 
 function bindTopbar() {
@@ -94,9 +115,9 @@ function updateBadges() {
 function renderReaderCards() {
   const readers = readersDB.getAll();
   readers.forEach(r => {
-    const jStats = logDB.getReaderStats(r.id);
+    const stats = logDB.getReaderStats(r.id);
     const el = document.getElementById(`reader-sidebar-${r.id}`);
-    if (el) el.querySelector('.reader-sub').textContent = `已读 ${jStats.finished} 本`;
+    if (el) el.querySelector('.reader-sub').textContent = `已读 ${stats.finished} 本`;
   });
 }
 
@@ -109,7 +130,6 @@ function renderDashboard() {
   document.getElementById('stat-didi').textContent = stats.forDidi;
   document.getElementById('stat-read').textContent = logs.filter(l => l.status === 'finished').length;
 
-  // 馆长寄语
   const greetings = [
     `书架上现在有 <strong>${stats.total}</strong> 本书啦～记得多给孩子们念念哦。`,
     `姐姐的书和弟弟的书都在等着被翻开，今晚要读哪一本呢？`,
@@ -118,7 +138,6 @@ function renderDashboard() {
   ];
   document.getElementById('greeting-text').innerHTML = greetings[Math.floor(Math.random() * greetings.length)];
 
-  // 最近录入
   const recent = booksDB.getAll().slice(0, 6);
   const recentEl = document.getElementById('dash-recent-books');
   if (recent.length === 0) {
@@ -128,7 +147,6 @@ function renderDashboard() {
     bindBookCardClicks(recentEl);
   }
 
-  // 最近阅读
   const recentLogs = logDB.getAll().slice(0, 4);
   const logEl = document.getElementById('dash-recent-logs');
   if (recentLogs.length === 0) {
@@ -142,9 +160,8 @@ function renderDashboard() {
 function renderBooks() {
   let books = booksDB.getAll();
   if (bookFilter !== 'all') {
-    if (bookFilter === 'available') books = books.filter(b => b.status === 'available');
-    else if (bookFilter === 'reading') books = books.filter(b => b.status === 'reading');
-    else if (bookFilter === 'read') books = books.filter(b => b.status === 'read');
+    if (['available', 'reading', 'read'].includes(bookFilter))
+      books = books.filter(b => b.status === bookFilter);
     else books = booksDB.getByCategory(bookFilter);
   }
   renderBooksList(books);
@@ -207,7 +224,6 @@ function bindBookCardClicks(container) {
   });
 }
 
-// Filter tabs
 document.addEventListener('click', e => {
   const ftab = e.target.closest('.ftab[data-filter]');
   if (!ftab) return;
@@ -217,7 +233,6 @@ document.addEventListener('click', e => {
   renderBooks();
 });
 
-// View toggle
 document.addEventListener('click', e => {
   const vbtn = e.target.closest('.view-btn[data-view]');
   if (!vbtn) return;
@@ -235,16 +250,13 @@ function renderReaderPage(readerId) {
   const el = document.getElementById(`page-${readerId}`);
   if (!el) return;
 
-  // Profile header
   el.querySelector('.rp-num-finished').textContent = stats.finished;
   el.querySelector('.rp-num-reading').textContent = stats.reading;
   el.querySelector('.rp-num-rating').textContent = stats.avgRating || '—';
 
-  // Interests
   const intEl = el.querySelector('.rp-interests');
   intEl.innerHTML = reader.interests.map(i => `<span class="interest-tag">${esc(i)}</span>`).join('');
 
-  // 推荐书单
   const recs = generateRecommendations(readerId);
   const recEl = el.querySelector('.rec-list');
   if (recs.length === 0) {
@@ -260,7 +272,6 @@ function renderReaderPage(readerId) {
     bindBookCardClicks(el.querySelector('.rec-list'));
   }
 
-  // 已读书单
   const finished = logDB.getFinished(readerId);
   const readEl = el.querySelector('.read-list');
   if (finished.length === 0) {
@@ -323,8 +334,6 @@ function bindAddBook() {
       if (v && !addBookTags.includes(v)) { addBookTags.push(v); renderAddTags(); e.target.value = ''; }
     }
   });
-
-  // 分类渲染
   const catSel = document.getElementById('book-category');
   CATEGORIES.forEach(c => {
     const opt = document.createElement('option'); opt.value = c; opt.textContent = c;
@@ -366,7 +375,6 @@ function openAddBook(bookId) {
   }
   openModal('modal-add-book');
 }
-
 window.openEditBook = openAddBook;
 
 function renderAddTags() {
@@ -380,7 +388,6 @@ window.removeBookTag = i => { addBookTags.splice(i, 1); renderAddTags(); };
 function saveBook() {
   const title = document.getElementById('book-title').value.trim();
   if (!title) { toast('请填写书名', 'error'); return; }
-
   const forReaders = [...document.querySelectorAll('.reader-check:checked')].map(cb => cb.value);
   const data = {
     title,
@@ -393,7 +400,6 @@ function saveBook() {
     tags: [...addBookTags],
     forReaders,
   };
-
   if (editBookId) {
     booksDB.update(editBookId, data);
     toast('书籍信息已更新 ✓', 'success');
@@ -403,8 +409,6 @@ function saveBook() {
       const warn = document.getElementById('dup-warning');
       warn.innerHTML = `📚 家里已经有一本《${esc(result.existing.title)}》了哦～要继续录入吗？`;
       warn.classList.add('show');
-      warn.querySelector || (warn.onclick = () => { forceSaveBook(data); closeModal('modal-add-book'); });
-      // Add force button
       warn.innerHTML += `<br><button class="btn btn-outline btn-sm" style="margin-top:8px;" onclick="forceSaveBook()">确认重复录入</button>`;
       window.forceSaveBook = () => {
         const list = booksDB.getAll();
@@ -436,6 +440,7 @@ function openBookDetail(bookId) {
   if (!book) return;
   const readers = readersDB.getAll();
   const logs = logDB.getByBook(bookId);
+  const nfcUrl = generateNFCUrl(bookId);
   const statusMap = { available: '在架', reading: '阅读中', read: '已读完' };
   const el = document.getElementById('book-detail-body');
   el.innerHTML = `
@@ -457,23 +462,117 @@ function openBookDetail(bookId) {
       <div style="font-size:12px;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:8px;">阅读记录</div>
       ${logs.map(l => {
         const reader = readersDB.get(l.readerId);
-        return reader ? `<div class="log-item" style="margin-bottom:6px;">${logItemHTML(l)}</div>` : '';
+        return reader ? logItemHTML(l) : '';
       }).join('')}` : ''}
-    <div style="display:flex;gap:8px;margin-top:16px;">
+    <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;">
       <button class="btn btn-outline btn-sm" onclick="openEditBook(${book.id});closeModal('modal-book-detail')">编辑</button>
       <button class="btn btn-green btn-sm" onclick="openAddLog(${book.id});closeModal('modal-book-detail')">记录阅读</button>
+      <button class="btn btn-ghost btn-sm" onclick="copyNFCUrl(${book.id})">📋 复制 NFC 链接</button>
     </div>
+    <div id="nfc-url-display-${book.id}" style="display:none;margin-top:10px;padding:10px;background:var(--bg);border-radius:8px;font-size:11px;word-break:break-all;color:var(--text-muted);">${esc(nfcUrl)}</div>
   `;
   openModal('modal-book-detail');
 }
 window.openBookDetail = openBookDetail;
+
+window.copyNFCUrl = (bookId) => {
+  const url = generateNFCUrl(bookId);
+  navigator.clipboard.writeText(url).then(() => {
+    toast('NFC 链接已复制，写入 NFC 标签后孩子碰一下就能登记 ✓', 'success');
+    const el = document.getElementById(`nfc-url-display-${bookId}`);
+    if (el) el.style.display = 'block';
+  }).catch(() => {
+    const el = document.getElementById(`nfc-url-display-${bookId}`);
+    if (el) { el.style.display = 'block'; }
+    toast('请手动复制上方链接', 'error');
+  });
+};
+
+// ── 快速登记 Modal（NFC 跳转 / 孩子端操作）─────
+function openQuickLog(bookId) {
+  const book = booksDB.getAll().find(b => b.id === bookId);
+  if (!book) return;
+  const readers = readersDB.getAll();
+  const el = document.getElementById('quick-log-body');
+
+  el.innerHTML = `
+    <div class="quick-book-info">
+      <div class="quick-book-cover" style="background:${book.coverColor}">${esc(book.title)}</div>
+      <div class="quick-book-name">${esc(book.title)}</div>
+      <div class="quick-book-author">${esc(book.author || '')}</div>
+    </div>
+    <div class="quick-section-label">我是谁？</div>
+    <div class="quick-reader-btns">
+      ${readers.map(r => `
+        <button class="quick-reader-btn" data-reader="${r.id}" style="--reader-color:${r.color}">
+          <span class="quick-reader-avatar">${r.avatar}</span>
+          <span class="quick-reader-name">${r.name}</span>
+        </button>`).join('')}
+    </div>
+    <div class="quick-section-label" style="margin-top:20px;">我要做什么？</div>
+    <div class="quick-action-btns" id="quick-action-btns" style="display:none;">
+      <button class="quick-action-btn reading" onclick="submitQuickLog(${bookId}, 'reading')">
+        <span class="quick-action-icon">📖</span>
+        <span>我开始读啦</span>
+      </button>
+      <button class="quick-action-btn finished" onclick="submitQuickLog(${bookId}, 'finished')">
+        <span class="quick-action-icon">✅</span>
+        <span>我读完了！</span>
+      </button>
+    </div>
+    <div id="quick-log-result" style="display:none;text-align:center;padding:20px 0;">
+      <div style="font-size:48px;margin-bottom:12px;">🎉</div>
+      <div style="font-size:18px;font-weight:bold;color:var(--brown-dark);">记录成功！</div>
+      <div id="quick-log-result-msg" style="font-size:14px;color:var(--text-muted);margin-top:6px;"></div>
+      <button class="btn btn-primary" style="margin-top:16px;" onclick="closeModal('modal-quick-log')">好的～</button>
+    </div>
+  `;
+
+  let selectedReader = null;
+  el.querySelectorAll('.quick-reader-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      el.querySelectorAll('.quick-reader-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedReader = btn.dataset.reader;
+      document.getElementById('quick-action-btns').style.display = 'grid';
+    });
+  });
+
+  window._quickSelectedReader = () => selectedReader;
+  openModal('modal-quick-log');
+}
+window.openQuickLog = openQuickLog;
+
+window.submitQuickLog = (bookId, status) => {
+  const readerId = window._quickSelectedReader?.();
+  if (!readerId) { toast('请先选择是谁在读书', 'error'); return; }
+  const reader = readersDB.get(readerId);
+  const book = booksDB.getAll().find(b => b.id === bookId);
+  const today = new Date().toISOString().split('T')[0];
+  logDB.add({
+    bookId, readerId, status,
+    startDate: today,
+    endDate: status === 'finished' ? today : null,
+    note: '', rating: 0,
+  });
+  renderAll();
+  // 显示成功动画
+  document.querySelector('.quick-reader-btns').style.display = 'none';
+  document.getElementById('quick-action-btns').style.display = 'none';
+  document.querySelectorAll('.quick-section-label').forEach(el => el.style.display = 'none');
+  document.getElementById('quick-log-result').style.display = 'block';
+  const msg = status === 'finished'
+    ? `${reader?.avatar || ''} ${reader?.name || ''} 读完了《${book?.title || ''}》，太棒了！`
+    : `${reader?.avatar || ''} ${reader?.name || ''} 开始读《${book?.title || ''}》啦，加油！`;
+  document.getElementById('quick-log-result-msg').textContent = msg;
+  toast(msg, 'success');
+};
 
 // ── 阅读记录 Modal ────────────────────────────
 let preselectedBookId = null;
 
 function bindAddLog() {
   document.getElementById('btn-save-log').addEventListener('click', saveLog);
-  // Populate book select
   const bookSel = document.getElementById('log-book');
   const updateBookOptions = () => {
     bookSel.innerHTML = '<option value="">请选择书籍…</option>';
@@ -520,32 +619,27 @@ function saveLog() {
   renderAll();
 }
 
-// ── Modal 控制 ────────────────────────────────
-function bindModals() {
-  document.querySelectorAll('[data-close-modal]').forEach(el => {
-    el.addEventListener('click', () => closeModal(el.dataset.closeModal));
-  });
-  document.querySelectorAll('.overlay').forEach(ov => {
-    ov.addEventListener('click', e => { if (e.target === ov) closeModal(ov.id); });
-  });
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') document.querySelectorAll('.overlay.open').forEach(m => closeModal(m.id));
-  });
-}
-function openModal(id) { document.getElementById(id)?.classList.add('open'); }
-function closeModal(id) { document.getElementById(id)?.classList.remove('open'); }
-window.closeModal = closeModal;
-
-// ── Export/Import ─────────────────────────────
-function bindExport() {
+// ── 设置页 ─────────────────────────────────────
+function bindSettings() {
   document.getElementById('btn-export').addEventListener('click', () => {
     const data = exportData();
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url;
-    a.download = `家庭图书馆备份-${new Date().toISOString().split('T')[0]}.json`;
-    a.click(); URL.revokeObjectURL(url);
+    downloadBlob(blob, `家庭图书馆备份-${today()}.json`);
     toast('备份已导出 ✓', 'success');
+  });
+
+  document.getElementById('btn-export-books-csv').addEventListener('click', () => {
+    const csv = exportBooksCSV();
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' }); // BOM for Excel/飞书
+    downloadBlob(blob, `书籍台账-${today()}.csv`);
+    toast('书籍 CSV 已导出，可直接导入飞书多维表格 ✓', 'success');
+  });
+
+  document.getElementById('btn-export-logs-csv').addEventListener('click', () => {
+    const csv = exportLogsCSV();
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+    downloadBlob(blob, `阅读记录-${today()}.csv`);
+    toast('阅读记录 CSV 已导出 ✓', 'success');
   });
 
   document.getElementById('import-file').addEventListener('change', e => {
@@ -567,6 +661,46 @@ function bindExport() {
   });
 }
 
+function renderSettings() {
+  // 渲染 NFC 书单
+  const books = booksDB.getAll();
+  const nfcList = document.getElementById('nfc-book-list');
+  if (!nfcList) return;
+  if (books.length === 0) {
+    nfcList.innerHTML = `<div style="color:var(--text-muted);font-size:13px;padding:12px 0;">还没有书，先录入书籍再生成 NFC 链接吧～</div>`;
+    return;
+  }
+  nfcList.innerHTML = books.map(b => `
+    <div class="nfc-list-row">
+      <div class="nfc-spine" style="background:${b.coverColor}"></div>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:500;color:var(--text-primary);">${esc(b.title)}</div>
+        <div style="font-size:11px;color:var(--text-muted);">${esc(b.author || '—')}</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="copyNFCUrl(${b.id})">📋 复制链接</button>
+    </div>
+  `).join('');
+}
+
+// ── Modal 控制 ────────────────────────────────
+function bindModals() {
+  document.querySelectorAll('[data-close-modal]').forEach(el => {
+    el.addEventListener('click', () => closeModal(el.dataset.closeModal));
+  });
+  document.querySelectorAll('.overlay').forEach(ov => {
+    ov.addEventListener('click', e => { if (e.target === ov) closeModal(ov.id); });
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') document.querySelectorAll('.overlay.open').forEach(m => closeModal(m.id));
+  });
+}
+function openModal(id) { document.getElementById(id)?.classList.add('open'); }
+function closeModal(id) { document.getElementById(id)?.classList.remove('open'); }
+window.closeModal = closeModal;
+
+// ── Export ────────────────────────────────────
+function bindExport() { /* handled in bindSettings */ }
+
 // ── Helpers ───────────────────────────────────
 function esc(s) {
   return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -586,5 +720,13 @@ function toast(msg, type = 'success') {
   el.className = `toast ${type}`;
   el.textContent = msg;
   document.getElementById('toasts').appendChild(el);
-  setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 200); }, 2600);
+  setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 200); }, 2800);
+}
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = filename;
+  a.click(); URL.revokeObjectURL(url);
+}
+function today() {
+  return new Date().toISOString().split('T')[0];
 }

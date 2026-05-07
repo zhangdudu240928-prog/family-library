@@ -207,6 +207,81 @@ export function importData(data) {
   if (data.librarian) set(KEYS.LIBRARIAN, data.librarian);
 }
 
+// ── 导出 CSV（用于导入飞书多维表格）──────────────
+export function exportBooksCSV() {
+  const books = booksDB.getAll();
+  const headers = ['书名', '作者', 'ISBN', '出版社', '出版年份', '分类', '标签', '适合谁读', '状态', '简介', '录入时间'];
+  const statusMap = { available: '在架', reading: '阅读中', read: '已读完' };
+  const readerMap = { jiejie: '姐姐', didi: '弟弟', all: '全家' };
+  const rows = books.map(b => [
+    b.title,
+    b.author || '',
+    b.isbn || '',
+    b.publisher || '',
+    b.year || '',
+    b.category || '',
+    (b.tags || []).join('、'),
+    (b.forReaders || []).map(r => readerMap[r] || r).join('、'),
+    statusMap[b.status] || b.status,
+    b.synopsis || '',
+    b.addedAt ? b.addedAt.split('T')[0] : '',
+  ]);
+  return toCsvString([headers, ...rows]);
+}
+
+export function exportLogsCSV() {
+  const logs = logDB.getAll();
+  const books = booksDB.getAll();
+  const readerMap = { jiejie: '姐姐', didi: '弟弟' };
+  const statusMap = { reading: '阅读中', finished: '已读完', 'gave-up': '暂时放下' };
+  const headers = ['书名', '读者', '状态', '开始日期', '完成日期', '评分', '读后感', '记录时间'];
+  const rows = logs.map(l => {
+    const book = books.find(b => b.id === l.bookId);
+    return [
+      book ? book.title : `(书籍ID:${l.bookId})`,
+      readerMap[l.readerId] || l.readerId,
+      statusMap[l.status] || l.status,
+      l.startDate || '',
+      l.endDate || '',
+      l.rating ? `${l.rating}星` : '',
+      l.note || '',
+      l.createdAt ? l.createdAt.split('T')[0] : '',
+    ];
+  });
+  return toCsvString([headers, ...rows]);
+}
+
+function toCsvString(rows) {
+  return rows.map(row =>
+    row.map(cell => {
+      const s = String(cell ?? '');
+      // 含逗号、引号、换行时需要包裹引号
+      if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+        return '"' + s.replace(/"/g, '""') + '"';
+      }
+      return s;
+    }).join(',')
+  ).join('\n');
+}
+
+// ── NFC 快速登记 Token ─────────────────────────
+// 通过 URL hash 传递书籍ID，格式：index.html#nfc?bookId=1234567890
+export function parseNFCFromURL() {
+  const hash = window.location.hash; // e.g. #nfc?bookId=1234567890
+  if (!hash.startsWith('#nfc')) return null;
+  const params = new URLSearchParams(hash.slice(5)); // slice '#nfc?'
+  const bookId = Number(params.get('bookId'));
+  if (!bookId) return null;
+  const book = booksDB.getAll().find(b => b.id === bookId);
+  return book ? { bookId, book } : null;
+}
+
+// 生成 NFC 跳转链接（贴在书背面的标签里写入这个 URL）
+export function generateNFCUrl(bookId, baseUrl) {
+  const base = baseUrl || window.location.href.split('#')[0];
+  return `${base}#nfc?bookId=${bookId}`;
+}
+
 // ── 馆长推荐引擎 ──────────────────────────────
 export function generateRecommendations(readerId) {
   const reader = readersDB.get(readerId);
