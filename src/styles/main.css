@@ -469,6 +469,15 @@ ul { list-style: none; }
 .quick-action-icon { font-size: 32px; }
 .quick-action-btn span:last-child { font-size: 14px; font-weight: 600; color: var(--text-primary); }
 
+/* ─── Loading 旋转动画 ───────────────────────── */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.loading-spin {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+}
+
 /* ─── Responsive ─────────────────────────────── */
 @media (max-width: 900px) {
   .stats-row { grid-template-columns: repeat(2, 1fr); }

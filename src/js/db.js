@@ -1,17 +1,13 @@
 /**
  * 家庭图书馆 · 数据管理层
- * localStorage 持久化
+ * 主存储：Supabase（云端，多设备同步）
+ * 离线缓存：localStorage（网络异常时可用）
  */
 
-const KEYS = {
-  BOOKS: 'lib_books',
-  READERS: 'lib_readers',
-  READING_LOG: 'lib_reading_log',
-  LIBRARIAN: 'lib_librarian',
-};
+import { sbBooks, sbLogs, fromRow, fromLogRow } from './supabase.js';
 
 // ── 默认读者档案 ──────────────────────────────
-const DEFAULT_READERS = [
+export const DEFAULT_READERS = [
   {
     id: 'jiejie',
     name: '姐姐',
@@ -19,7 +15,6 @@ const DEFAULT_READERS = [
     avatar: '🌿',
     color: '#7DB5A0',
     interests: ['历史', '文物', '植物', '动物', '冒险故事', '温情故事'],
-    readCount: 0,
   },
   {
     id: 'didi',
@@ -28,30 +23,45 @@ const DEFAULT_READERS = [
     avatar: '🚂',
     color: '#E8956D',
     interests: ['工程', '火车', '可爱故事', '温暖故事'],
-    readCount: 0,
   },
 ];
 
-// ── 通用读写 ──────────────────────────────────
-function get(key, def) {
-  try { return JSON.parse(localStorage.getItem(key)) ?? def; }
-  catch { return def; }
+// ── 本地缓存读写（离线备用）────────────────────
+const CACHE = {
+  books: 'lib_cache_books',
+  logs:  'lib_cache_logs',
+};
+function getCache(key) {
+  try { return JSON.parse(localStorage.getItem(key)) || []; }
+  catch { return []; }
 }
-function set(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+function setCache(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
+}
 
 // ── 图书 ──────────────────────────────────────
 export const booksDB = {
-  getAll() { return get(KEYS.BOOKS, []); },
-  save(list) { set(KEYS.BOOKS, list); },
+  // 从 Supabase 拉取，失败时用缓存
+  async getAll() {
+    try {
+      const rows = await sbBooks.getAll();
+      const books = rows.map(fromRow);
+      setCache(CACHE.books, books);
+      return books;
+    } catch {
+      return getCache(CACHE.books);
+    }
+  },
 
-  add(book) {
-    const list = this.getAll();
-    // 重复检测：同名同作者
-    const dup = list.find(b =>
+  async add(book) {
+    // 重复检测
+    const all = await this.getAll();
+    const dup = all.find(b =>
       b.title.trim().toLowerCase() === book.title.trim().toLowerCase() &&
       (b.author || '').trim().toLowerCase() === (book.author || '').trim().toLowerCase()
     );
     if (dup) return { duplicate: true, existing: dup };
+
     const entry = {
       id: Date.now(),
       title: book.title || '',
@@ -61,164 +71,167 @@ export const booksDB = {
       year: book.year || '',
       category: book.category || '未分类',
       tags: book.tags || [],
-      forReaders: book.forReaders || [],    // ['jiejie', 'didi', 'all']
+      forReaders: book.forReaders || [],
       coverColor: book.coverColor || randomCoverColor(),
-      status: 'available',                   // available | reading | read
+      status: 'available',
       synopsis: book.synopsis || '',
       addedAt: new Date().toISOString(),
     };
-    list.unshift(entry);
-    this.save(list);
-    return { duplicate: false, entry };
+    const row = await sbBooks.add(entry);
+    const saved = row ? fromRow(row) : entry;
+    // 更新缓存
+    const cached = getCache(CACHE.books);
+    setCache(CACHE.books, [saved, ...cached]);
+    return { duplicate: false, entry: saved };
   },
 
-  update(id, changes) {
-    const list = this.getAll();
-    const idx = list.findIndex(b => b.id === id);
-    if (idx !== -1) { list[idx] = { ...list[idx], ...changes }; this.save(list); }
+  async update(id, changes) {
+    await sbBooks.update(id, changes);
+    // 更新缓存
+    const cached = getCache(CACHE.books);
+    const idx = cached.findIndex(b => b.id === id);
+    if (idx !== -1) { cached[idx] = { ...cached[idx], ...changes }; setCache(CACHE.books, cached); }
   },
 
-  remove(id) { this.save(this.getAll().filter(b => b.id !== id)); },
-
-  search(query) {
-    const q = query.toLowerCase();
-    return this.getAll().filter(b =>
-      b.title.toLowerCase().includes(q) ||
-      (b.author || '').toLowerCase().includes(q) ||
-      (b.tags || []).some(t => t.toLowerCase().includes(q)) ||
-      (b.category || '').toLowerCase().includes(q)
-    );
+  async remove(id) {
+    await sbBooks.remove(id);
+    setCache(CACHE.books, getCache(CACHE.books).filter(b => b.id !== id));
   },
 
-  getByCategory(cat) { return this.getAll().filter(b => b.category === cat); },
-  getByReader(rid) { return this.getAll().filter(b => b.forReaders.includes(rid) || b.forReaders.includes('all')); },
+  async search(query) {
+    try {
+      const rows = await sbBooks.search(query);
+      return rows.map(fromRow);
+    } catch {
+      const q = query.toLowerCase();
+      return getCache(CACHE.books).filter(b =>
+        b.title.toLowerCase().includes(q) ||
+        (b.author || '').toLowerCase().includes(q) ||
+        (b.tags || []).some(t => t.toLowerCase().includes(q))
+      );
+    }
+  },
+
+  // 同步方法（用本地缓存，供不需要await的地方快速读取）
+  getAllCached() { return getCache(CACHE.books); },
+
   getStats() {
-    const all = this.getAll();
+    const all = this.getAllCached();
     return {
       total: all.length,
       byCategory: groupBy(all, 'category'),
       forJiejie: all.filter(b => b.forReaders.includes('jiejie') || b.forReaders.includes('all')).length,
-      forDidi: all.filter(b => b.forReaders.includes('didi') || b.forReaders.includes('all')).length,
+      forDidi:   all.filter(b => b.forReaders.includes('didi') || b.forReaders.includes('all')).length,
     };
-  }
-};
-
-// ── 读者 ──────────────────────────────────────
-export const readersDB = {
-  getAll() { return get(KEYS.READERS, DEFAULT_READERS); },
-  save(list) { set(KEYS.READERS, list); },
-  get(id) { return this.getAll().find(r => r.id === id); },
-  update(id, changes) {
-    const list = this.getAll();
-    const idx = list.findIndex(r => r.id === id);
-    if (idx !== -1) { list[idx] = { ...list[idx], ...changes }; this.save(list); }
   },
+
+  getByCategory(cat) { return this.getAllCached().filter(b => b.category === cat); },
 };
 
 // ── 阅读记录 ──────────────────────────────────
 export const logDB = {
-  getAll() { return get(KEYS.READING_LOG, []); },
-  save(list) { set(KEYS.READING_LOG, list); },
+  async getAll() {
+    try {
+      const rows = await sbLogs.getAll();
+      const logs = rows.map(fromLogRow);
+      setCache(CACHE.logs, logs);
+      return logs;
+    } catch {
+      return getCache(CACHE.logs);
+    }
+  },
 
-  add(entry) {
-    const list = this.getAll();
+  async add(entry) {
     const log = {
       id: Date.now(),
-      bookId: entry.bookId,
-      readerId: entry.readerId,
-      status: entry.status || 'reading',   // reading | finished | gave-up
+      bookId:    entry.bookId,
+      readerId:  entry.readerId,
+      status:    entry.status || 'reading',
       startDate: entry.startDate || new Date().toISOString().split('T')[0],
-      endDate: entry.endDate || null,
-      note: entry.note || '',
-      rating: entry.rating || 0,           // 0-5颗星
+      endDate:   entry.endDate || null,
+      note:      entry.note || '',
+      rating:    entry.rating || 0,
       createdAt: new Date().toISOString(),
     };
-    list.unshift(log);
-    this.save(list);
-    // 更新书籍状态
-    if (entry.status === 'finished') booksDB.update(entry.bookId, { status: 'read' });
-    else if (entry.status === 'reading') booksDB.update(entry.bookId, { status: 'reading' });
-    return log;
+    const row = await sbLogs.add(log);
+    const saved = row ? fromLogRow(row) : log;
+    // 同步更新书籍状态
+    if (entry.status === 'finished') await booksDB.update(entry.bookId, { status: 'read' });
+    else if (entry.status === 'reading') await booksDB.update(entry.bookId, { status: 'reading' });
+    // 更新日志缓存
+    const cached = getCache(CACHE.logs);
+    setCache(CACHE.logs, [saved, ...cached]);
+    return saved;
   },
 
-  getByReader(readerId) { return this.getAll().filter(l => l.readerId === readerId); },
-  getByBook(bookId) { return this.getAll().filter(l => l.bookId === bookId); },
-  getFinished(readerId) { return this.getAll().filter(l => l.readerId === readerId && l.status === 'finished'); },
+  async getByReader(readerId) {
+    try {
+      const rows = await sbLogs.getByReader(readerId);
+      return rows.map(fromLogRow);
+    } catch {
+      return getCache(CACHE.logs).filter(l => l.readerId === readerId);
+    }
+  },
 
-  getReaderStats(readerId) {
-    const logs = this.getByReader(readerId);
+  async getByBook(bookId) {
+    try {
+      const rows = await sbLogs.getByBook(bookId);
+      return rows.map(fromLogRow);
+    } catch {
+      return getCache(CACHE.logs).filter(l => l.bookId === bookId);
+    }
+  },
+
+  async getFinished(readerId) {
+    try {
+      const rows = await sbLogs.getFinished(readerId);
+      return rows.map(fromLogRow);
+    } catch {
+      return getCache(CACHE.logs).filter(l => l.readerId === readerId && l.status === 'finished');
+    }
+  },
+
+  // 同步方法（用缓存）
+  getAllCached() { return getCache(CACHE.logs); },
+
+  getReaderStatsCached(readerId) {
+    const logs = getCache(CACHE.logs).filter(l => l.readerId === readerId);
     const finished = logs.filter(l => l.status === 'finished');
-    const reading = logs.filter(l => l.status === 'reading');
+    const reading  = logs.filter(l => l.status === 'reading');
     const avgRating = finished.length
-      ? (finished.reduce((s, l) => s + (l.rating || 0), 0) / finished.length).toFixed(1)
-      : 0;
+      ? (finished.reduce((s, l) => s + (l.rating || 0), 0) / finished.length).toFixed(1) : 0;
     return { total: logs.length, finished: finished.length, reading: reading.length, avgRating };
-  }
+  },
 };
 
-// ── 馆长设置 ──────────────────────────────────
+// ── 读者档案（本地固定，不存云端）──────────────
+export const readersDB = {
+  getAll() { return DEFAULT_READERS; },
+  get(id)  { return DEFAULT_READERS.find(r => r.id === id); },
+};
+
+// ── 馆长设置（本地）──────────────────────────
 export const librarianDB = {
   get() {
-    return get(KEYS.LIBRARIAN, {
-      name: '图图馆长',
-      greeting: '欢迎来到这间小书房～',
-      lastVisit: null,
-    });
+    try {
+      return JSON.parse(localStorage.getItem('lib_librarian')) || { name: '图图馆长', lastVisit: null };
+    } catch { return { name: '图图馆长', lastVisit: null }; }
   },
-  save(data) { set(KEYS.LIBRARIAN, data); },
   updateLastVisit() {
     const d = this.get();
     d.lastVisit = new Date().toISOString();
-    this.save(d);
-  }
+    localStorage.setItem('lib_librarian', JSON.stringify(d));
+  },
 };
 
-// ── 工具函数 ──────────────────────────────────
-function groupBy(arr, key) {
-  return arr.reduce((acc, item) => {
-    const k = item[key] || '未分类';
-    acc[k] = (acc[k] || 0) + 1;
-    return acc;
-  }, {});
-}
-
-function randomCoverColor() {
-  const colors = [
-    '#C8866A','#7DB5A0','#D4A853','#8B6F9E','#6B8FAB',
-    '#C17B5A','#5F8C6F','#A85A5A','#7A8F6B','#8B7355',
-  ];
-  return colors[Math.floor(Math.random() * colors.length)];
-}
-
-// ── 备份/恢复 ─────────────────────────────────
-export function exportData() {
-  return {
-    books: booksDB.getAll(),
-    readers: readersDB.getAll(),
-    logs: logDB.getAll(),
-    librarian: librarianDB.get(),
-    exportedAt: new Date().toISOString(),
-  };
-}
-export function importData(data) {
-  if (data.books) set(KEYS.BOOKS, data.books);
-  if (data.readers) set(KEYS.READERS, data.readers);
-  if (data.logs) set(KEYS.READING_LOG, data.logs);
-  if (data.librarian) set(KEYS.LIBRARIAN, data.librarian);
-}
-
-// ── 导出 CSV（用于导入飞书多维表格）──────────────
+// ── CSV 导出（用于飞书多维表格）────────────────
 export function exportBooksCSV() {
-  const books = booksDB.getAll();
+  const books = booksDB.getAllCached();
   const headers = ['书名', '作者', 'ISBN', '出版社', '出版年份', '分类', '标签', '适合谁读', '状态', '简介', '录入时间'];
   const statusMap = { available: '在架', reading: '阅读中', read: '已读完' };
   const readerMap = { jiejie: '姐姐', didi: '弟弟', all: '全家' };
   const rows = books.map(b => [
-    b.title,
-    b.author || '',
-    b.isbn || '',
-    b.publisher || '',
-    b.year || '',
+    b.title, b.author || '', b.isbn || '', b.publisher || '', b.year || '',
     b.category || '',
     (b.tags || []).join('、'),
     (b.forReaders || []).map(r => readerMap[r] || r).join('、'),
@@ -230,8 +243,8 @@ export function exportBooksCSV() {
 }
 
 export function exportLogsCSV() {
-  const logs = logDB.getAll();
-  const books = booksDB.getAll();
+  const logs = logDB.getAllCached();
+  const books = booksDB.getAllCached();
   const readerMap = { jiejie: '姐姐', didi: '弟弟' };
   const statusMap = { reading: '阅读中', finished: '已读完', 'gave-up': '暂时放下' };
   const headers = ['书名', '读者', '状态', '开始日期', '完成日期', '评分', '读后感', '记录时间'];
@@ -241,8 +254,7 @@ export function exportLogsCSV() {
       book ? book.title : `(书籍ID:${l.bookId})`,
       readerMap[l.readerId] || l.readerId,
       statusMap[l.status] || l.status,
-      l.startDate || '',
-      l.endDate || '',
+      l.startDate || '', l.endDate || '',
       l.rating ? `${l.rating}星` : '',
       l.note || '',
       l.createdAt ? l.createdAt.split('T')[0] : '',
@@ -255,42 +267,47 @@ function toCsvString(rows) {
   return rows.map(row =>
     row.map(cell => {
       const s = String(cell ?? '');
-      // 含逗号、引号、换行时需要包裹引号
-      if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+      if (s.includes(',') || s.includes('"') || s.includes('\n'))
         return '"' + s.replace(/"/g, '""') + '"';
-      }
       return s;
     }).join(',')
   ).join('\n');
 }
 
-// ── NFC 快速登记 Token ─────────────────────────
-// 通过 URL hash 传递书籍ID，格式：index.html#nfc?bookId=1234567890
+// ── NFC 链接 ──────────────────────────────────
 export function parseNFCFromURL() {
-  const hash = window.location.hash; // e.g. #nfc?bookId=1234567890
+  const hash = window.location.hash;
   if (!hash.startsWith('#nfc')) return null;
-  const params = new URLSearchParams(hash.slice(5)); // slice '#nfc?'
+  const params = new URLSearchParams(hash.slice(5));
   const bookId = Number(params.get('bookId'));
   if (!bookId) return null;
-  const book = booksDB.getAll().find(b => b.id === bookId);
+  const book = booksDB.getAllCached().find(b => b.id === bookId);
   return book ? { bookId, book } : null;
 }
 
-// 生成 NFC 跳转链接（贴在书背面的标签里写入这个 URL）
 export function generateNFCUrl(bookId, baseUrl) {
   const base = baseUrl || window.location.href.split('#')[0];
   return `${base}#nfc?bookId=${bookId}`;
 }
 
-// ── 馆长推荐引擎 ──────────────────────────────
+// ── 完整备份导出（JSON）─────────────────────────
+export function exportData() {
+  return {
+    books:     booksDB.getAllCached(),
+    logs:      logDB.getAllCached(),
+    readers:   readersDB.getAll(),
+    exportedAt: new Date().toISOString(),
+  };
+}
+
+// ── 推荐引擎 ──────────────────────────────────
 export function generateRecommendations(readerId) {
   const reader = readersDB.get(readerId);
   if (!reader) return [];
-  const allBooks = booksDB.getAll();
-  const finishedIds = new Set(logDB.getFinished(readerId).map(l => l.bookId));
-  const readingIds = new Set(logDB.getByReader(readerId).filter(l => l.status === 'reading').map(l => l.bookId));
-
-  // 还没读过的书中，与兴趣标签匹配的
+  const allBooks = booksDB.getAllCached();
+  const allLogs = logDB.getAllCached();
+  const finishedIds = new Set(allLogs.filter(l => l.readerId === readerId && l.status === 'finished').map(l => l.bookId));
+  const readingIds  = new Set(allLogs.filter(l => l.readerId === readerId && l.status === 'reading').map(l => l.bookId));
   return allBooks
     .filter(b => !finishedIds.has(b.id) && !readingIds.has(b.id))
     .map(b => {
@@ -302,4 +319,18 @@ export function generateRecommendations(readerId) {
     .filter(b => b.matchScore > 0)
     .sort((a, b) => b.matchScore - a.matchScore)
     .slice(0, 6);
+}
+
+// ── 工具函数 ──────────────────────────────────
+function groupBy(arr, key) {
+  return arr.reduce((acc, item) => {
+    const k = item[key] || '未分类';
+    acc[k] = (acc[k] || 0) + 1;
+    return acc;
+  }, {});
+}
+
+function randomCoverColor() {
+  const colors = ['#C8866A','#7DB5A0','#D4A853','#8B6F9E','#6B8FAB','#C17B5A','#5F8C6F','#A85A5A','#7A8F6B','#8B7355'];
+  return colors[Math.floor(Math.random() * colors.length)];
 }

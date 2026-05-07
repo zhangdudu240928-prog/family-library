@@ -232,6 +232,22 @@
       <div class="page" id="page-settings">
         <div style="max-width:680px;display:flex;flex-direction:column;gap:14px;">
 
+          <!-- 云端同步 -->
+          <div class="card">
+            <div class="section-hd" style="margin-bottom:12px;">
+              <div class="section-title">☁️ Supabase 云端同步</div>
+              <div class="section-sub">所有书籍和阅读记录实时保存到云端，多设备同步</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--bg-secondary);border-radius:10px;margin-bottom:14px;">
+              <div style="font-size:28px;">✅</div>
+              <div style="flex:1;">
+                <div style="font-size:13px;font-weight:600;color:var(--text-primary);">已连接 Supabase 云端</div>
+                <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">数据自动同步，换设备打开同样能看到全部数据</div>
+              </div>
+              <button class="btn btn-outline btn-sm" id="btn-refresh-cloud">🔄 立即同步</button>
+            </div>
+          </div>
+
           <!-- 飞书多维表格同步说明 -->
           <div class="card">
             <div class="section-hd" style="margin-bottom:12px;">
@@ -452,6 +468,11 @@
     </div>
     <div id="quick-log-body"></div>
   </div>
+</div>
+
+<!-- Global Loading -->
+<div id="global-loading" style="display:none;position:fixed;top:0;left:0;right:0;z-index:3000;background:var(--brown);color:#fff;padding:8px 20px;font-size:13px;align-items:center;gap:10px;justify-content:center;">
+  <span class="loading-spin">⟳</span> 正在同步云端数据…
 </div>
 
 <!-- Toast -->
