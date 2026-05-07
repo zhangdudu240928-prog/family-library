@@ -470,6 +470,45 @@
   </div>
 </div>
 
+<!-- ── 底部导航（仅手机端显示）─────────────────── -->
+<nav class="mobile-nav" id="mobile-nav" style="display:none;">
+  <div class="mobile-nav-item active" data-page="dashboard">
+    <span class="mni">🏡</span>
+    <span class="mni-label">书房</span>
+  </div>
+  <div class="mobile-nav-item" data-page="books">
+    <span class="mni">📚</span>
+    <span class="mni-label">藏书阁</span>
+  </div>
+  <div class="mobile-nav-item" data-page="jiejie">
+    <span class="mni">🌿</span>
+    <span class="mni-label">姐姐</span>
+  </div>
+  <div class="mobile-nav-item" data-page="didi">
+    <span class="mni">🚂</span>
+    <span class="mni-label">弟弟</span>
+  </div>
+  <div class="mobile-nav-item" data-page="logs">
+    <span class="mni">📖</span>
+    <span class="mni-label">记录</span>
+  </div>
+  <div class="mobile-nav-item" data-page="settings">
+    <span class="mni">⚙️</span>
+    <span class="mni-label">设置</span>
+  </div>
+</nav>
+
+<!-- ── FAB 悬浮录入按钮（仅手机端）──────────── -->
+<button class="fab" id="fab-add" style="display:none;" title="录入新书">＋</button>
+
+<!-- ── 手机端搜索弹层 ──────────────────────── -->
+<button class="mobile-search-btn" id="mobile-search-btn" style="display:none;">🔍</button>
+<div class="mobile-search-overlay" id="mobile-search-overlay">
+  <div class="mobile-search-box">
+    <input type="text" id="mobile-search-input" placeholder="搜书名、作者、标签…" autocomplete="off" />
+  </div>
+</div>
+
 <!-- Global Loading -->
 <div id="global-loading" style="display:none;position:fixed;top:0;left:0;right:0;z-index:3000;background:var(--brown);color:#fff;padding:8px 20px;font-size:13px;align-items:center;gap:10px;justify-content:center;">
   <span class="loading-spin">⟳</span> 正在同步云端数据…

@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   bindAddLog();
   bindModals();
   bindSettings();
+  bindMobileUI();
 
   // 先用缓存快速渲染，再拉云端数据刷新
   renderAllSync();
@@ -743,3 +744,70 @@ function downloadBlob(blob, filename) {
   a.click(); URL.revokeObjectURL(url);
 }
 function today() { return new Date().toISOString().split('T')[0]; }
+
+// ── 手机端 UI ──────────────────────────────────
+function bindMobileUI() {
+  const isMobile = () => window.innerWidth <= 640;
+
+  // 底部导航：绑定点击
+  document.querySelectorAll('.mobile-nav-item[data-page]').forEach(el => {
+    el.addEventListener('click', () => goPage(el.dataset.page));
+  });
+
+  // FAB 按钮：根据当前页面决定行为
+  const fab = document.getElementById('fab-add');
+  fab.addEventListener('click', () => {
+    if (currentPage === 'logs') openAddLog();
+    else openAddBook();
+  });
+
+  // 搜索按钮 + 弹层
+  const searchBtn = document.getElementById('mobile-search-btn');
+  const searchOverlay = document.getElementById('mobile-search-overlay');
+  const searchInput = document.getElementById('mobile-search-input');
+  searchBtn.addEventListener('click', () => {
+    searchOverlay.classList.add('open');
+    setTimeout(() => searchInput.focus(), 100);
+  });
+  searchOverlay.addEventListener('click', e => {
+    if (e.target === searchOverlay) searchOverlay.classList.remove('open');
+  });
+  let mSearchTimer;
+  searchInput.addEventListener('input', e => {
+    const q = e.target.value.trim();
+    clearTimeout(mSearchTimer);
+    if (!q) { if (currentPage === 'books') renderBooks(); return; }
+    mSearchTimer = setTimeout(async () => {
+      searchOverlay.classList.remove('open');
+      goPage('books');
+      const books = await booksDB.search(q);
+      renderBooksList(books);
+    }, 400);
+  });
+
+  // 响应窗口大小变化，动态显隐手机端元素
+  function applyMobileLayout() {
+    const m = isMobile();
+    document.getElementById('mobile-nav').style.display = m ? 'flex' : 'none';
+    document.getElementById('fab-add').style.display = m ? 'flex' : 'none';
+    document.getElementById('mobile-search-btn').style.display = m ? 'flex' : 'none';
+    if (!m) searchOverlay.classList.remove('open');
+  }
+  applyMobileLayout();
+  window.addEventListener('resize', applyMobileLayout);
+}
+
+// 扩展 goPage，同时更新底部导航高亮
+const _goPageOrig = goPage;
+window.goPage = function(page) {
+  _goPageOrig(page);
+  document.querySelectorAll('.mobile-nav-item[data-page]').forEach(el => {
+    el.classList.toggle('active', el.dataset.page === page);
+  });
+  // FAB：在设置页隐藏，其他页显示
+  const fab = document.getElementById('fab-add');
+  if (fab && fab.style.display !== 'none') {
+    fab.style.opacity = page === 'settings' ? '0' : '1';
+    fab.style.pointerEvents = page === 'settings' ? 'none' : 'auto';
+  }
+};
