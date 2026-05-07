@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>图图馆长 · 家庭图书馆</title>
+  <link rel="stylesheet" href="src/styles/main.css" />
+</head>
+<body>
+<div class="app">
+
+  <!-- ── Sidebar ──────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="librarian-avatar">🦔</div>
+      <div class="librarian-name">图图馆长</div>
+      <div class="librarian-title">童书编辑 · 博物爱好者</div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section">书房</div>
+      <div class="nav-item active" data-page="dashboard">
+        <span class="ni">🏡</span><span>今日书房</span>
+      </div>
+      <div class="nav-item" data-page="books">
+        <span class="ni">📚</span><span>藏书阁</span>
+        <span class="nav-badge" id="badge-books">0</span>
+      </div>
+      <div class="nav-item" data-page="logs">
+        <span class="ni">📖</span><span>阅读记录</span>
+        <span class="nav-badge" id="badge-logs">0</span>
+      </div>
+
+      <div class="nav-section">小书友</div>
+      <div class="nav-item" data-page="jiejie">
+        <span class="ni">🌿</span><span>姐姐的书单</span>
+        <span class="nav-badge" id="badge-jiejie">0</span>
+      </div>
+      <div class="nav-item" data-page="didi">
+        <span class="ni">🚂</span><span>弟弟的书单</span>
+        <span class="nav-badge" id="badge-didi">0</span>
+      </div>
+
+      <div class="nav-section">工具</div>
+      <div class="nav-item" data-page="settings">
+        <span class="ni">⚙️</span><span>设置 / 备份</span>
+      </div>
+    </nav>
+
+    <div class="sidebar-readers">
+      <div class="reader-card" data-reader="jiejie" id="reader-sidebar-jiejie">
+        <div class="reader-avatar" style="background:#7DB5A020;">🌿</div>
+        <div class="reader-info">
+          <div class="reader-name">姐姐</div>
+          <div class="reader-sub">已读 0 本</div>
+        </div>
+      </div>
+      <div class="reader-card" data-reader="didi" id="reader-sidebar-didi">
+        <div class="reader-avatar" style="background:#E8956D20;">🚂</div>
+        <div class="reader-info">
+          <div class="reader-name">弟弟</div>
+          <div class="reader-sub">已读 0 本</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:10px;">
+        <button class="btn btn-primary btn-sm" style="flex:1;" id="btn-add-book-sidebar">＋ 录入书</button>
+        <button class="btn btn-outline btn-sm" style="flex:1;" id="btn-add-log-sidebar">＋ 记录</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── Main ─────────────────────────────────── -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title" id="page-title">图图馆长的书房</div>
+      <div class="search-wrap">
+        <span>🔍</span>
+        <input type="text" id="search-input" placeholder="搜书名、作者、标签…" />
+      </div>
+      <button class="btn btn-primary" id="btn-topbar-add" style="display:none">＋ 录入新书</button>
+    </header>
+
+    <div class="page-area">
+
+      <!-- ── Dashboard ──────────────────────────── -->
+      <div class="page active" id="page-dashboard">
+        <div class="librarian-greeting">
+          <div class="greeting-avatar">🦔</div>
+          <div class="greeting-body">
+            <div class="greeting-name">图图馆长说：</div>
+            <div class="greeting-text" id="greeting-text">欢迎来到我们的小书房～</div>
+          </div>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-box">
+            <div class="stat-num" id="stat-total">0</div>
+            <div class="stat-label">📚 馆藏总数</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-num" id="stat-jiejie">0</div>
+            <div class="stat-label">🌿 姐姐的书</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-num" id="stat-didi">0</div>
+            <div class="stat-label">🚂 弟弟的书</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-num" id="stat-read">0</div>
+            <div class="stat-label">✅ 读完的书</div>
+          </div>
+        </div>
+
+        <div class="dash-grid">
+          <div>
+            <div class="section-hd">
+              <div>
+                <div class="section-title">最近入库</div>
+                <div class="section-sub">新加入书架的书</div>
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="goPage('books')">查看全部 →</button>
+            </div>
+            <div id="dash-recent-books"></div>
+          </div>
+          <div>
+            <div class="section-hd">
+              <div>
+                <div class="section-title">最近阅读</div>
+                <div class="section-sub">孩子们的阅读动态</div>
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="goPage('logs')">查看全部 →</button>
+            </div>
+            <div id="dash-recent-logs" class="log-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 藏书阁 ──────────────────────────────── -->
+      <div class="page" id="page-books">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+          <div class="filter-row" style="margin:0;flex-wrap:wrap;">
+            <div class="ftab active" data-filter="all">全部</div>
+            <div class="ftab" data-filter="available">在架</div>
+            <div class="ftab" data-filter="reading">阅读中</div>
+            <div class="ftab" data-filter="read">已读完</div>
+            <div class="ftab" data-filter="绘本">绘本</div>
+            <div class="ftab" data-filter="科普">科普</div>
+            <div class="ftab" data-filter="自然博物">自然博物</div>
+            <div class="ftab" data-filter="历史文化">历史文化</div>
+            <div class="ftab" data-filter="工程科技">工程科技</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="view-toggle">
+              <div class="view-btn active" data-view="grid">⊞</div>
+              <div class="view-btn" data-view="list">≡</div>
+            </div>
+            <button class="btn btn-primary btn-sm" id="btn-add-book-topbar" onclick="openAddBook()">＋ 录入新书</button>
+          </div>
+        </div>
+        <div id="books-container"></div>
+      </div>
+
+      <!-- ── 姐姐 ──────────────────────────────── -->
+      <div class="page" id="page-jiejie">
+        <div class="reader-profile">
+          <div class="rp-avatar" style="background:#7DB5A025;">🌿</div>
+          <div class="rp-info">
+            <div class="rp-name">姐姐</div>
+            <div class="rp-meta">9岁 · 历史、文物、植物、动物、冒险与温情故事</div>
+            <div class="rp-interests"></div>
+          </div>
+          <div class="rp-stats">
+            <div><div class="rp-stat-num rp-num-finished">0</div><div class="rp-stat-lbl">已读完</div></div>
+            <div><div class="rp-stat-num rp-num-reading">0</div><div class="rp-stat-lbl">阅读中</div></div>
+            <div><div class="rp-stat-num rp-num-rating">—</div><div class="rp-stat-lbl">平均评分</div></div>
+          </div>
+        </div>
+
+        <div class="section-hd" style="margin-top:6px;">
+          <div>
+            <div class="section-title">🦔 图图馆长的推荐</div>
+            <div class="section-sub">根据姐姐的兴趣，从书架上为她挑的书</div>
+          </div>
+        </div>
+        <div class="rec-list" style="margin-bottom:24px;"></div>
+
+        <div class="section-hd">
+          <div class="section-title">✅ 已读完的书</div>
+        </div>
+        <div class="read-list"></div>
+      </div>
+
+      <!-- ── 弟弟 ──────────────────────────────── -->
+      <div class="page" id="page-didi">
+        <div class="reader-profile">
+          <div class="rp-avatar" style="background:#E8956D25;">🚂</div>
+          <div class="rp-info">
+            <div class="rp-name">弟弟</div>
+            <div class="rp-meta">6岁 · 工程、火车、可爱温暖的小故事</div>
+            <div class="rp-interests"></div>
+          </div>
+          <div class="rp-stats">
+            <div><div class="rp-stat-num rp-num-finished">0</div><div class="rp-stat-lbl">已读完</div></div>
+            <div><div class="rp-stat-num rp-num-reading">0</div><div class="rp-stat-lbl">阅读中</div></div>
+            <div><div class="rp-stat-num rp-num-rating">—</div><div class="rp-stat-lbl">平均评分</div></div>
+          </div>
+        </div>
+
+        <div class="section-hd" style="margin-top:6px;">
+          <div>
+            <div class="section-title">🦔 图图馆长的推荐</div>
+            <div class="section-sub">根据弟弟的兴趣，从书架上为他挑的书</div>
+          </div>
+        </div>
+        <div class="rec-list" style="margin-bottom:24px;"></div>
+
+        <div class="section-hd">
+          <div class="section-title">✅ 已读完的书</div>
+        </div>
+        <div class="read-list"></div>
+      </div>
+
+      <!-- ── 阅读记录 ──────────────────────────── -->
+      <div class="page" id="page-logs">
+        <div class="section-hd">
+          <div>
+            <div class="section-title">阅读记录</div>
+            <div class="section-sub">孩子们的阅读轨迹</div>
+          </div>
+          <button class="btn btn-primary btn-sm" id="btn-add-log-topbar" onclick="openAddLog()">＋ 记录阅读</button>
+        </div>
+        <div id="logs-list" class="log-list"></div>
+      </div>
+
+      <!-- ── 设置 ──────────────────────────────── -->
+      <div class="page" id="page-settings">
+        <div style="max-width:500px;">
+          <div class="card" style="margin-bottom:14px;">
+            <div class="section-hd" style="margin-bottom:12px;">
+              <div class="section-title">💾 导出备份</div>
+            </div>
+            <p style="font-size:13px;color:var(--text-muted);line-height:1.7;margin-bottom:14px;">将所有书籍、阅读记录导出为 JSON 文件，可用于恢复。</p>
+            <button class="btn btn-primary" id="btn-export">⬇ 导出全部数据</button>
+          </div>
+          <div class="card">
+            <div class="section-hd" style="margin-bottom:12px;">
+              <div class="section-title">📥 导入恢复</div>
+            </div>
+            <p style="font-size:13px;color:var(--text-muted);line-height:1.7;margin-bottom:14px;">从备份文件恢复，<strong style="color:#c05050;">将覆盖当前数据</strong>。</p>
+            <input type="file" id="import-file" accept=".json" style="display:none" />
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
+              <button class="btn btn-outline btn-sm" onclick="document.getElementById('import-file').click()">选择文件</button>
+              <span id="import-filename" style="font-size:12px;color:var(--text-muted);">未选择</span>
+            </div>
+            <button class="btn btn-danger" id="btn-import" disabled>⬆ 导入并覆盖</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /page-area -->
+  </div>
+</div>
+
+<!-- ── Modal：录入新书 ──────────────────────────── -->
+<div class="overlay" id="modal-add-book">
+  <div class="modal">
+    <div class="modal-hd">
+      <div class="modal-title" id="modal-add-book-title">录入新书</div>
+      <span class="modal-close" data-close-modal="modal-add-book">✕</span>
+    </div>
+    <div class="dup-warning" id="dup-warning"></div>
+    <div class="form-row">
+      <div class="form-group" style="grid-column:1/-1">
+        <label class="form-label">书名 *</label>
+        <input class="form-input" id="book-title" placeholder="书的名字" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">作者</label>
+        <input class="form-input" id="book-author" placeholder="作者姓名" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">分类</label>
+        <select class="form-select" id="book-category"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">出版社</label>
+        <input class="form-input" id="book-publisher" placeholder="出版社" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">出版年份</label>
+        <input class="form-input" id="book-year" placeholder="2024" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">ISBN</label>
+      <input class="form-input" id="book-isbn" placeholder="978-…（可选）" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">标签（回车添加）</label>
+      <div class="tags-wrap" id="book-tags-display"></div>
+      <input class="form-input" id="book-tag-input" placeholder="输入标签后按回车，如：植物、冒险、3岁+" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">简介</label>
+      <textarea class="form-textarea" id="book-synopsis" rows="3" placeholder="简单描述这本书…（可选）"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">适合谁读</label>
+      <div class="checkbox-group">
+        <label class="checkbox-item"><input type="checkbox" class="reader-check" value="jiejie" /> 🌿 姐姐</label>
+        <label class="checkbox-item"><input type="checkbox" class="reader-check" value="didi" /> 🚂 弟弟</label>
+        <label class="checkbox-item"><input type="checkbox" class="reader-check" value="all" /> 👨‍👩‍👧‍👦 全家</label>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-outline" data-close-modal="modal-add-book">取消</button>
+      <button class="btn btn-primary" id="btn-save-book">保存入库</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal：图书详情 ──────────────────────────── -->
+<div class="overlay" id="modal-book-detail">
+  <div class="modal">
+    <div class="modal-hd">
+      <div class="modal-title">书籍详情</div>
+      <span class="modal-close" data-close-modal="modal-book-detail">✕</span>
+    </div>
+    <div id="book-detail-body"></div>
+  </div>
+</div>
+
+<!-- ── Modal：记录阅读 ──────────────────────────── -->
+<div class="overlay" id="modal-add-log">
+  <div class="modal">
+    <div class="modal-hd">
+      <div class="modal-title">记录阅读</div>
+      <span class="modal-close" data-close-modal="modal-add-log">✕</span>
+    </div>
+    <div class="form-row">
+      <div class="form-group" style="grid-column:1/-1">
+        <label class="form-label">书籍 *</label>
+        <select class="form-select" id="log-book"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">读者</label>
+        <select class="form-select" id="log-reader"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">阅读状态</label>
+        <select class="form-select" id="log-status">
+          <option value="reading">📖 阅读中</option>
+          <option value="finished">✅ 已读完</option>
+          <option value="gave-up">⏸ 暂时放下</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">开始日期</label>
+        <input class="form-input" id="log-start" type="date" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">完成日期（可选）</label>
+        <input class="form-input" id="log-end" type="date" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">评分（0-5颗星）</label>
+      <select class="form-select" id="log-rating">
+        <option value="0">无评分</option>
+        <option value="1">★ 一般</option>
+        <option value="2">★★ 还好</option>
+        <option value="3">★★★ 不错</option>
+        <option value="4">★★★★ 很好看</option>
+        <option value="5">★★★★★ 太喜欢了！</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">读后感 / 备注</label>
+      <textarea class="form-textarea" id="log-note" rows="3" placeholder="孩子的感受，印象深的情节，或者家长的观察…"></textarea>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-outline" data-close-modal="modal-add-log">取消</button>
+      <button class="btn btn-primary" id="btn-save-log">保存记录</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toasts" id="toasts"></div>
+
+<script type="module" src="src/js/app.js"></script>
+</body>
+</html>
