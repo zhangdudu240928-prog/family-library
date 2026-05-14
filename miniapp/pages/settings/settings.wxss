@@ -1,0 +1,57 @@
+/* 设置页 */
+
+.sync-status-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 20rpx;
+  background: #F5EFE8;
+  border-radius: 12rpx;
+  padding: 20rpx;
+}
+.sync-icon { font-size: 40rpx; flex-shrink: 0; }
+.sync-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #3D2B1F;
+  margin-bottom: 4rpx;
+}
+.sync-sub { font-size: 22rpx; color: #9E8B7A; line-height: 1.5; }
+
+.stats-list { display: flex; flex-direction: column; gap: 0; }
+.stats-row-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18rpx 0;
+  border-bottom: 1rpx solid #F0EBE4;
+}
+.stats-row-item:last-child { border-bottom: none; }
+.stats-item-label { font-size: 28rpx; color: #6B4F3A; }
+.stats-item-val { font-size: 28rpx; font-weight: 600; color: #3D2B1F; }
+.color-jiejie { color: #7DB5A0; }
+.color-didi   { color: #E8956D; }
+
+.reader-entry {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #F0EBE4;
+}
+.reader-entry:last-child { border-bottom: none; }
+.reader-entry.jiejie { border-left: 6rpx solid #7DB5A0; padding-left: 16rpx; }
+.reader-entry.didi   { border-left: 6rpx solid #E8956D; padding-left: 16rpx; }
+.re-avatar { font-size: 44rpx; flex-shrink: 0; }
+.re-info { flex: 1; }
+.re-name { font-size: 28rpx; font-weight: 600; color: #3D2B1F; margin-bottom: 4rpx; }
+.re-sub  { font-size: 22rpx; color: #9E8B7A; }
+.re-arrow { font-size: 40rpx; color: #D4C9BF; }
+
+.about-card {
+  text-align: center;
+  padding: 40rpx 32rpx;
+}
+.about-avatar { font-size: 72rpx; margin-bottom: 16rpx; }
+.about-title  { font-size: 32rpx; font-weight: 700; color: #3D2B1F; margin-bottom: 8rpx; }
+.about-desc   { font-size: 26rpx; color: #9E8B7A; margin-bottom: 12rpx; line-height: 1.6; }
+.about-version { font-size: 22rpx; color: #B8A99A; }

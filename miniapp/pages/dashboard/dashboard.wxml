@@ -1,0 +1,136 @@
+<!-- 今日书房 -->
+<view class="container">
+
+  <!-- 馆长问候 -->
+  <view class="greeting-card">
+    <view class="greeting-avatar">🦔</view>
+    <view class="greeting-body">
+      <view class="greeting-name">图图馆长说：</view>
+      <view class="greeting-text">{{greetingText}}</view>
+    </view>
+  </view>
+
+  <!-- 统计数字 -->
+  <view class="stats-row">
+    <view class="stat-box">
+      <view class="stat-num">{{stats.total}}</view>
+      <view class="stat-label">📚 馆藏总数</view>
+    </view>
+    <view class="stat-box">
+      <view class="stat-num color-jiejie">{{stats.forJiejie}}</view>
+      <view class="stat-label">🌿 姐姐的书</view>
+    </view>
+    <view class="stat-box">
+      <view class="stat-num color-didi">{{stats.forDidi}}</view>
+      <view class="stat-label">🚂 弟弟的书</view>
+    </view>
+    <view class="stat-box">
+      <view class="stat-num">{{stats.readCount}}</view>
+      <view class="stat-label">✅ 读完的书</view>
+    </view>
+  </view>
+
+  <!-- 读者卡片 -->
+  <view class="readers-row">
+    <view class="reader-card jiejie" bindtap="goReader" data-id="jiejie">
+      <view class="rc-avatar">🌿</view>
+      <view class="rc-info">
+        <view class="rc-name">姐姐</view>
+        <view class="rc-sub">已读 {{jiejieStats.finished}} 本</view>
+      </view>
+      <view class="rc-arrow">›</view>
+    </view>
+    <view class="reader-card didi" bindtap="goReader" data-id="didi">
+      <view class="rc-avatar">🚂</view>
+      <view class="rc-info">
+        <view class="rc-name">弟弟</view>
+        <view class="rc-sub">已读 {{didiStats.finished}} 本</view>
+      </view>
+      <view class="rc-arrow">›</view>
+    </view>
+  </view>
+
+  <!-- 最近入库 -->
+  <view class="section-hd">
+    <view>
+      <view class="section-title">最近入库</view>
+      <view class="section-sub">新加入书架的书</view>
+    </view>
+    <view class="btn btn-ghost btn-sm" bindtap="goBooks">查看全部 ›</view>
+  </view>
+
+  <view wx:if="{{recentBooks.length === 0}}" class="empty-wrap">
+    <view class="empty-icon">📚</view>
+    <view class="empty-title">还没有书哦</view>
+    <view class="empty-desc">点击下方「录入新书」开始建立书库吧～</view>
+  </view>
+  <scroll-view wx:else scroll-x class="recent-books-scroll">
+    <view class="recent-books-row">
+      <view
+        wx:for="{{recentBooks}}"
+        wx:key="id"
+        class="recent-book-item"
+        bindtap="goBookDetail"
+        data-id="{{item.id}}"
+      >
+        <view class="recent-cover" style="background:{{item.coverColor}}">
+          <text class="recent-cover-text">{{item.title}}</text>
+        </view>
+        <view class="recent-title">{{item.title}}</view>
+        <view class="recent-author">{{item.author || '—'}}</view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 最近阅读 -->
+  <view class="section-hd" style="margin-top:32rpx;">
+    <view>
+      <view class="section-title">最近阅读</view>
+      <view class="section-sub">孩子们的阅读动态</view>
+    </view>
+    <view class="btn btn-ghost btn-sm" bindtap="goLogs">查看全部 ›</view>
+  </view>
+
+  <view wx:if="{{recentLogs.length === 0}}" class="empty-wrap">
+    <view class="empty-icon">📖</view>
+    <view class="empty-title">还没有阅读记录</view>
+    <view class="empty-desc">读完一本书，来这里记录下吧～</view>
+  </view>
+  <view wx:else>
+    <view
+      wx:for="{{recentLogs}}"
+      wx:key="id"
+      class="log-item"
+    >
+      <view class="log-reader-dot" style="background:{{item.readerColor}}25">{{item.readerAvatar}}</view>
+      <view class="log-content">
+        <view class="log-title">{{item.bookTitle}}</view>
+        <view class="log-meta">{{item.readerName}} · {{item.statusText}} · {{item.startDate}}</view>
+        <view wx:if="{{item.note}}" class="log-note">"{{item.note}}"</view>
+        <view wx:if="{{item.rating}}" class="stars">{{item.starsText}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="bottom-safe"></view>
+</view>
+
+<!-- 悬浮操作按钮 -->
+<view class="fab-wrap">
+  <!-- 展开的子按钮 -->
+  <view class="fab-sub-list" style="{{fabOpen ? '' : 'display:none'}}">
+    <view class="fab-sub-item" bindtap="goAddBook">
+      <view class="fab-sub-label">录入新书</view>
+      <view class="fab-sub-btn">📚</view>
+    </view>
+    <view class="fab-sub-item" bindtap="goAddLog">
+      <view class="fab-sub-label">记录阅读</view>
+      <view class="fab-sub-btn">📖</view>
+    </view>
+  </view>
+  <!-- 主按钮 -->
+  <view class="fab-main {{fabOpen ? 'fab-open' : ''}}" bindtap="toggleFab">＋</view>
+</view>
+
+<!-- 遮罩层，点击关闭 -->
+<view wx:if="{{fabOpen}}" class="fab-mask" bindtap="closeFab"></view>

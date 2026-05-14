@@ -1,0 +1,126 @@
+/* 读者书单 */
+
+.reader-profile {
+  display: flex;
+  align-items: flex-start;
+  gap: 28rpx;
+  margin-bottom: 24rpx;
+}
+.rp-avatar {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 52rpx;
+  flex-shrink: 0;
+}
+.rp-info { flex: 1; }
+.rp-name {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #3D2B1F;
+  margin-bottom: 4rpx;
+}
+.rp-meta {
+  font-size: 24rpx;
+  color: #9E8B7A;
+  margin-bottom: 12rpx;
+}
+.rp-interests {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8rpx;
+}
+.interest-tag {
+  display: inline-block;
+  padding: 6rpx 16rpx;
+  background: #F5EFE8;
+  color: #6B4F3A;
+  border-radius: 20rpx;
+  font-size: 22rpx;
+}
+
+/* 统计 */
+.stats-row {
+  display: flex;
+  gap: 16rpx;
+}
+.stat-box {
+  flex: 1;
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 20rpx 12rpx;
+  text-align: center;
+  box-shadow: 0 2rpx 12rpx rgba(61,43,31,0.05);
+}
+.stat-num {
+  font-size: 44rpx;
+  font-weight: 700;
+  color: #3D2B1F;
+  line-height: 1.1;
+}
+.stat-label {
+  font-size: 20rpx;
+  color: #B8A99A;
+  margin-top: 6rpx;
+}
+
+/* 推荐横滚 */
+.rec-scroll { width: 100%; margin-bottom: 8rpx; }
+.rec-row {
+  display: flex;
+  gap: 20rpx;
+  width: max-content;
+  padding-bottom: 8rpx;
+}
+.rec-card {
+  width: 180rpx;
+  flex-shrink: 0;
+}
+.rec-cover {
+  width: 110rpx;
+  height: 155rpx;
+  border-radius: 4rpx 12rpx 12rpx 4rpx;
+  margin: 0 auto 12rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10rpx;
+  box-shadow: 0 4rpx 14rpx rgba(0,0,0,0.18);
+}
+.rec-cover-text {
+  color: rgba(255,255,255,0.92);
+  font-size: 18rpx;
+  text-align: center;
+  line-height: 1.4;
+  word-break: break-all;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.rec-title {
+  font-size: 24rpx;
+  font-weight: 500;
+  color: #3D2B1F;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 4rpx;
+}
+.rec-author {
+  font-size: 20rpx;
+  color: #9E8B7A;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 4rpx;
+}
+.rec-match {
+  font-size: 20rpx;
+  text-align: center;
+}

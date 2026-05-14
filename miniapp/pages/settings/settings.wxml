@@ -1,0 +1,83 @@
+<!-- 设置 / 同步 -->
+<view class="container">
+
+  <!-- 云端同步状态 -->
+  <view class="card">
+    <view class="section-title" style="margin-bottom:16rpx;">☁️ 云端同步</view>
+    <view class="sync-status-row">
+      <view class="sync-icon">✅</view>
+      <view class="sync-info">
+        <view class="sync-title">已连接 Supabase 云端</view>
+        <view class="sync-sub">数据自动同步，换设备打开同样能看到全部数据</view>
+      </view>
+    </view>
+    <button class="btn btn-outline btn-block" style="margin-top:20rpx;" bindtap="syncNow">
+      {{syncing ? '同步中…' : '🔄 立即同步'}}
+    </button>
+  </view>
+
+  <!-- 数据统计 -->
+  <view class="card">
+    <view class="section-title" style="margin-bottom:20rpx;">📊 数据概览</view>
+    <view class="stats-list">
+      <view class="stats-row-item">
+        <view class="stats-item-label">馆藏总数</view>
+        <view class="stats-item-val">{{stats.total}} 本</view>
+      </view>
+      <view class="stats-row-item">
+        <view class="stats-item-label">阅读记录</view>
+        <view class="stats-item-val">{{stats.logsCount}} 条</view>
+      </view>
+      <view class="stats-row-item">
+        <view class="stats-item-label">已读完</view>
+        <view class="stats-item-val">{{stats.readCount}} 本</view>
+      </view>
+      <view class="stats-row-item">
+        <view class="stats-item-label">姐姐的书</view>
+        <view class="stats-item-val color-jiejie">{{stats.forJiejie}} 本</view>
+      </view>
+      <view class="stats-row-item">
+        <view class="stats-item-label">弟弟的书</view>
+        <view class="stats-item-val color-didi">{{stats.forDidi}} 本</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 孩子书单入口 -->
+  <view class="card">
+    <view class="section-title" style="margin-bottom:16rpx;">👤 小书友的专属书单</view>
+    <view class="reader-entry jiejie" bindtap="goReader" data-id="jiejie">
+      <view class="re-avatar">🌿</view>
+      <view class="re-info">
+        <view class="re-name">姐姐的书单</view>
+        <view class="re-sub">馆长推荐 + 已读历史</view>
+      </view>
+      <view class="re-arrow">›</view>
+    </view>
+    <view class="reader-entry didi" bindtap="goReader" data-id="didi">
+      <view class="re-avatar">🚂</view>
+      <view class="re-info">
+        <view class="re-name">弟弟的书单</view>
+        <view class="re-sub">馆长推荐 + 已读历史</view>
+      </view>
+      <view class="re-arrow">›</view>
+    </view>
+  </view>
+
+  <!-- 清除缓存 -->
+  <view class="card">
+    <view class="section-title" style="margin-bottom:8rpx;">🗂 缓存管理</view>
+    <view class="section-sub" style="margin-bottom:16rpx;">清除本地缓存后，下次打开将重新从云端加载数据</view>
+    <button class="btn btn-outline btn-block" bindtap="clearCache">清除本地缓存</button>
+  </view>
+
+  <!-- 关于 -->
+  <view class="card about-card">
+    <view class="about-avatar">🦔</view>
+    <view class="about-title">图图馆长 · 家庭图书馆</view>
+    <view class="about-desc">为姐姐和弟弟精心记录每一本陪伴成长的书</view>
+    <view class="about-version">v1.0 · 微信小程序版</view>
+  </view>
+
+  <view class="bottom-safe"></view>
+</view>

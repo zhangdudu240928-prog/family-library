@@ -1,0 +1,93 @@
+<!-- 读者书单页 -->
+<view class="container">
+
+  <!-- 读者档案 -->
+  <view class="reader-profile card">
+    <view class="rp-avatar" style="background:{{reader.color}}20">{{reader.avatar}}</view>
+    <view class="rp-info">
+      <view class="rp-name">{{reader.name}}</view>
+      <view class="rp-meta">{{reader.age}}岁</view>
+      <view class="rp-interests">
+        <view wx:for="{{reader.interests}}" wx:key="*this" class="interest-tag">{{item}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 统计 -->
+  <view class="stats-row" style="margin-bottom:32rpx;">
+    <view class="stat-box">
+      <view class="stat-num" style="color:{{reader.color}}">{{stats.finished}}</view>
+      <view class="stat-label">已读完</view>
+    </view>
+    <view class="stat-box">
+      <view class="stat-num">{{stats.reading}}</view>
+      <view class="stat-label">阅读中</view>
+    </view>
+    <view class="stat-box">
+      <view class="stat-num">{{stats.avgRating || '—'}}</view>
+      <view class="stat-label">平均评分</view>
+    </view>
+  </view>
+
+  <!-- 馆长推荐 -->
+  <view class="section-hd">
+    <view>
+      <view class="section-title">🦔 图图馆长的推荐</view>
+      <view class="section-sub">根据兴趣从书架上为Ta挑的书</view>
+    </view>
+  </view>
+
+  <view wx:if="{{recommendations.length === 0}}" class="empty-wrap" style="padding:40rpx 0;">
+    <view class="empty-icon">✨</view>
+    <view class="empty-title">还没有推荐</view>
+    <view class="empty-desc">多录入一些书，馆长就能帮你找到合适的了～</view>
+  </view>
+  <scroll-view wx:else scroll-x class="rec-scroll">
+    <view class="rec-row">
+      <view
+        wx:for="{{recommendations}}"
+        wx:key="id"
+        class="rec-card"
+        bindtap="goBookDetail"
+        data-id="{{item.id}}"
+      >
+        <view class="rec-cover" style="background:{{item.coverColor}}">
+          <text class="rec-cover-text">{{item.title}}</text>
+        </view>
+        <view class="rec-title">{{item.title}}</view>
+        <view class="rec-author">{{item.author || '—'}}</view>
+        <view class="rec-match" style="color:{{reader.color}}">✦ 兴趣匹配</view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 已读完 -->
+  <view class="section-hd" style="margin-top:32rpx;">
+    <view class="section-title">✅ 已读完的书</view>
+  </view>
+
+  <view wx:if="{{finishedBooks.length === 0}}" class="empty-wrap" style="padding:40rpx 0;">
+    <view class="empty-icon">📖</view>
+    <view class="empty-title">还没有读完的书</view>
+    <view class="empty-desc">读完第一本书后记录在这里吧～</view>
+  </view>
+  <view wx:else class="card" style="padding:0 32rpx;">
+    <view
+      wx:for="{{finishedBooks}}"
+      wx:key="logId"
+      class="book-row"
+      bindtap="goBookDetail"
+      data-id="{{item.bookId}}"
+    >
+      <view class="book-spine" style="background:{{item.coverColor}};height:64rpx;"></view>
+      <view class="book-row-info">
+        <view class="book-row-title">{{item.title}}</view>
+        <view class="book-row-meta">{{item.author || '—'}} · 读完于 {{item.endDate || '—'}}</view>
+        <view wx:if="{{item.note}}" class="log-note">"{{item.note}}"</view>
+      </view>
+      <view class="stars">{{item.starsText}}</view>
+    </view>
+  </view>
+
+  <view class="bottom-safe"></view>
+</view>

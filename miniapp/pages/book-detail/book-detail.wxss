@@ -1,0 +1,177 @@
+/* 书籍详情 / 录入编辑 */
+
+.detail-hero {
+  display: flex;
+  gap: 28rpx;
+  align-items: flex-start;
+}
+.detail-cover-wrap { flex-shrink: 0; }
+.detail-cover {
+  width: 120rpx;
+  height: 170rpx;
+  border-radius: 4rpx 14rpx 14rpx 4rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12rpx;
+  box-shadow: 0 6rpx 20rpx rgba(0,0,0,0.22);
+}
+.detail-cover-text {
+  color: rgba(255,255,255,0.92);
+  font-size: 20rpx;
+  text-align: center;
+  line-height: 1.4;
+  word-break: break-all;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.detail-info { flex: 1; min-width: 0; }
+.detail-title {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #3D2B1F;
+  line-height: 1.3;
+  margin-bottom: 8rpx;
+}
+.detail-author {
+  font-size: 26rpx;
+  color: #6B4F3A;
+  margin-bottom: 6rpx;
+}
+.detail-pub {
+  font-size: 22rpx;
+  color: #B8A99A;
+  margin-bottom: 12rpx;
+}
+.detail-status-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 12rpx;
+  flex-wrap: wrap;
+}
+.detail-category {
+  font-size: 22rpx;
+}
+.detail-readers-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8rpx;
+}
+.reader-avatar-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6rpx;
+  background: #F5EFE8;
+  border-radius: 20rpx;
+  padding: 6rpx 16rpx;
+  font-size: 22rpx;
+  color: #6B4F3A;
+}
+
+.synopsis-text {
+  font-size: 26rpx;
+  color: #6B4F3A;
+  line-height: 1.8;
+}
+
+.tags-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8rpx;
+  margin-bottom: 8rpx;
+}
+.tag-removable {
+  display: inline-flex;
+  align-items: center;
+  gap: 6rpx;
+}
+.tag-remove {
+  font-size: 20rpx;
+  color: #B8A99A;
+  padding-left: 4rpx;
+}
+.tag-input-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+/* 表单 */
+.form-group {
+  margin-bottom: 28rpx;
+}
+.form-row {
+  display: flex;
+  gap: 20rpx;
+}
+.form-group.half { flex: 1; min-width: 0; }
+.form-label {
+  font-size: 24rpx;
+  color: #9E8B7A;
+  margin-bottom: 10rpx;
+  font-weight: 500;
+}
+.required { color: #C05050; }
+.form-input {
+  width: 100%;
+  height: 72rpx;
+  background: #F8F4EF;
+  border-radius: 12rpx;
+  padding: 0 20rpx;
+  font-size: 28rpx;
+  color: #3D2B1F;
+  box-sizing: border-box;
+  border: 1rpx solid #EDE8E3;
+}
+.form-textarea {
+  width: 100%;
+  min-height: 140rpx;
+  background: #F8F4EF;
+  border-radius: 12rpx;
+  padding: 20rpx;
+  font-size: 28rpx;
+  color: #3D2B1F;
+  box-sizing: border-box;
+  border: 1rpx solid #EDE8E3;
+  line-height: 1.7;
+}
+.form-picker {
+  height: 72rpx;
+  line-height: 72rpx;
+  background: #F8F4EF;
+  border-radius: 12rpx;
+  padding: 0 20rpx;
+  font-size: 28rpx;
+  color: #3D2B1F;
+  border: 1rpx solid #EDE8E3;
+}
+
+/* 读者选择 */
+.readers-check-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+.reader-check-btn {
+  padding: 12rpx 24rpx;
+  background: #F5EFE8;
+  border-radius: 20rpx;
+  font-size: 26rpx;
+  color: #9E8B7A;
+  border: 2rpx solid transparent;
+}
+.reader-check-btn.checked {
+  background: #3D2B1F;
+  color: #FAF6EF;
+}
+
+/* 操作按钮区 */
+.action-btns {
+  padding-bottom: 40rpx;
+}
+.btn.disabled {
+  opacity: 0.6;
+}

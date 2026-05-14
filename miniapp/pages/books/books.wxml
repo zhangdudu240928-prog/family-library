@@ -1,0 +1,98 @@
+<!-- 藏书阁 -->
+<view class="container">
+
+  <!-- 搜索栏 -->
+  <view class="search-bar">
+    <view class="search-icon">🔍</view>
+    <input
+      class="search-input"
+      placeholder="搜书名、作者、标签…"
+      value="{{searchQuery}}"
+      bindinput="onSearchInput"
+      confirm-type="search"
+    />
+    <view wx:if="{{searchQuery}}" class="search-clear" bindtap="clearSearch">✕</view>
+  </view>
+
+  <!-- 过滤标签 -->
+  <scroll-view scroll-x class="filter-scroll">
+    <view class="filter-row">
+      <view
+        wx:for="{{filters}}"
+        wx:key="key"
+        class="ftab {{currentFilter === item.key ? 'active' : ''}}"
+        bindtap="setFilter"
+        data-key="{{item.key}}"
+      >{{item.label}}</view>
+    </view>
+  </scroll-view>
+
+  <!-- 视图切换 + 录入按钮 -->
+  <view class="toolbar">
+    <view class="view-toggle">
+      <view
+        class="view-btn {{bookView === 'grid' ? 'active' : ''}}"
+        bindtap="setView"
+        data-view="grid"
+      >⊞</view>
+      <view
+        class="view-btn {{bookView === 'list' ? 'active' : ''}}"
+        bindtap="setView"
+        data-view="list"
+      >≡</view>
+    </view>
+    <view class="toolbar-count">共 {{displayBooks.length}} 本</view>
+    <button class="btn btn-primary btn-sm" bindtap="goAddBook">＋ 录入新书</button>
+  </view>
+
+  <!-- 空状态 -->
+  <view wx:if="{{displayBooks.length === 0}}" class="empty-wrap">
+    <view class="empty-icon">📚</view>
+    <view class="empty-title">{{searchQuery ? '没找到相关书籍' : '这里还空着'}}</view>
+    <view class="empty-desc">{{searchQuery ? '换个关键词试试～' : '快去录入第一本书吧～'}}</view>
+  </view>
+
+  <!-- 网格视图 -->
+  <view wx:elif="{{bookView === 'grid'}}" class="books-grid">
+    <view
+      wx:for="{{displayBooks}}"
+      wx:key="id"
+      class="book-card"
+      bindtap="goBookDetail"
+      data-id="{{item.id}}"
+    >
+      <view class="book-cover-area" style="background:{{item.coverColor}}18">
+        <view class="book-cover-inner" style="background:{{item.coverColor}}">
+          <text class="book-cover-text">{{item.title}}</text>
+        </view>
+      </view>
+      <view class="book-card-info">
+        <view class="book-card-title">{{item.title}}</view>
+        <view class="book-card-author">{{item.author || '—'}}</view>
+        <view class="book-card-tags">
+          <text wx:for="{{item.tags}}" wx:key="*this" wx:for-item="tag" class="tag">{{tag}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 列表视图 -->
+  <view wx:else class="card" style="padding:0 32rpx;">
+    <view
+      wx:for="{{displayBooks}}"
+      wx:key="id"
+      class="book-row"
+      bindtap="goBookDetail"
+      data-id="{{item.id}}"
+    >
+      <view class="book-spine" style="background:{{item.coverColor}};height:64rpx;"></view>
+      <view class="book-row-info">
+        <view class="book-row-title">{{item.title}}</view>
+        <view class="book-row-meta">{{item.author || '—'}} · {{item.category}}</view>
+      </view>
+      <view class="status-badge status-{{item.status}}">{{item.statusText}}</view>
+    </view>
+  </view>
+
+  <view class="bottom-safe"></view>
+</view>

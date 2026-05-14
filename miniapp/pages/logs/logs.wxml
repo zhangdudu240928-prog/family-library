@@ -1,0 +1,101 @@
+<!-- 阅读记录 -->
+<view class="container">
+
+  <!-- 操作栏 -->
+  <view class="logs-toolbar">
+    <view class="section-title">孩子们的阅读轨迹</view>
+    <button class="btn btn-primary btn-sm" bindtap="openAddLog">＋ 记录</button>
+  </view>
+
+  <!-- 记录列表 -->
+  <view wx:if="{{logs.length === 0}}" class="empty-wrap">
+    <view class="empty-icon">📖</view>
+    <view class="empty-title">还没有阅读记录</view>
+    <view class="empty-desc">来记录一次阅读吧～</view>
+  </view>
+  <view wx:else class="card" style="padding:0 32rpx;">
+    <view wx:for="{{logs}}" wx:key="id" class="log-item">
+      <view class="log-reader-dot" style="background:{{item.readerColor}}25">{{item.readerAvatar}}</view>
+      <view class="log-content">
+        <view class="log-title">{{item.bookTitle}}</view>
+        <view class="log-meta">{{item.readerName}} · {{item.statusText}} · {{item.startDate}}{{item.endDate ? ' → ' + item.endDate : ''}}</view>
+        <view wx:if="{{item.note}}" class="log-note">"{{item.note}}"</view>
+        <view wx:if="{{item.rating}}" class="stars">{{item.starsText}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="bottom-safe"></view>
+</view>
+
+<!-- ── 录入记录弹层 ── -->
+<view class="overlay {{showAddModal ? 'open' : ''}}" bindtap="closeModal">
+  <view class="modal" catchtap="">
+    <view class="modal-hd">
+      <view class="modal-title">记录阅读</view>
+      <view class="modal-close" bindtap="closeModal">✕</view>
+    </view>
+
+    <view class="form-group">
+      <view class="form-label">书籍 <text style="color:#C05050">*</text></view>
+      <picker bindchange="onBookChange" value="{{form.bookIndex}}" range="{{bookOptions}}" range-key="title">
+        <view class="form-picker">{{form.bookIndex >= 0 && bookOptions[form.bookIndex] ? bookOptions[form.bookIndex].title : '请选择书籍…'}} ▾</view>
+      </picker>
+    </view>
+
+    <view class="form-row">
+      <view class="form-group half">
+        <view class="form-label">读者</view>
+        <picker bindchange="onReaderChange" value="{{form.readerIndex}}" range="{{readerOptions}}" range-key="name">
+          <view class="form-picker">{{readerOptions[form.readerIndex].avatar}} {{readerOptions[form.readerIndex].name}} ▾</view>
+        </picker>
+      </view>
+      <view class="form-group half">
+        <view class="form-label">状态</view>
+        <picker bindchange="onStatusChange" value="{{form.statusIndex}}" range="{{statusOptions}}" range-key="label">
+          <view class="form-picker">{{statusOptions[form.statusIndex].label}} ▾</view>
+        </picker>
+      </view>
+    </view>
+
+    <view class="form-row">
+      <view class="form-group half">
+        <view class="form-label">开始日期</view>
+        <picker mode="date" bindchange="onStartChange" value="{{form.startDate}}">
+          <view class="form-picker">{{form.startDate || '请选择'}} ▾</view>
+        </picker>
+      </view>
+      <view class="form-group half">
+        <view class="form-label">完成日期</view>
+        <picker mode="date" bindchange="onEndChange" value="{{form.endDate}}">
+          <view class="form-picker">{{form.endDate || '可选'}} ▾</view>
+        </picker>
+      </view>
+    </view>
+
+    <view class="form-group">
+      <view class="form-label">评分</view>
+      <picker bindchange="onRatingChange" value="{{form.ratingIndex}}" range="{{ratingOptions}}" range-key="label">
+        <view class="form-picker">{{ratingOptions[form.ratingIndex].label}} ▾</view>
+      </picker>
+    </view>
+
+    <view class="form-group">
+      <view class="form-label">读后感 / 备注</view>
+      <textarea
+        class="form-textarea"
+        placeholder="孩子的感受，印象深的情节，或家长的观察…"
+        value="{{form.note}}"
+        bindinput="onNoteInput"
+        auto-height
+      />
+    </view>
+
+    <view class="modal-ft">
+      <button class="btn btn-outline" bindtap="closeModal">取消</button>
+      <button class="btn btn-primary {{saving ? 'disabled' : ''}}" bindtap="saveLog">
+        {{saving ? '保存中…' : '保存记录'}}
+      </button>
+    </view>
+  </view>
+</view>

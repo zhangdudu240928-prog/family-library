@@ -1,0 +1,219 @@
+/* 今日书房 */
+
+.greeting-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 20rpx;
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 28rpx 32rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 2rpx 16rpx rgba(61,43,31,0.06);
+}
+.greeting-avatar {
+  font-size: 52rpx;
+  flex-shrink: 0;
+}
+.greeting-name {
+  font-size: 22rpx;
+  color: #9E8B7A;
+  margin-bottom: 6rpx;
+}
+.greeting-text {
+  font-size: 28rpx;
+  color: #3D2B1F;
+  line-height: 1.6;
+}
+
+/* 统计 */
+.stats-row {
+  display: flex;
+  gap: 16rpx;
+  margin-bottom: 24rpx;
+}
+.stat-box {
+  flex: 1;
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 20rpx 12rpx;
+  text-align: center;
+  box-shadow: 0 2rpx 12rpx rgba(61,43,31,0.05);
+}
+.stat-num {
+  font-size: 44rpx;
+  font-weight: 700;
+  color: #3D2B1F;
+  line-height: 1.1;
+}
+.stat-label {
+  font-size: 20rpx;
+  color: #B8A99A;
+  margin-top: 6rpx;
+}
+
+/* 读者卡片 */
+.readers-row {
+  display: flex;
+  gap: 20rpx;
+  margin-bottom: 32rpx;
+}
+.reader-card {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 24rpx;
+  box-shadow: 0 2rpx 12rpx rgba(61,43,31,0.05);
+}
+.reader-card.jiejie { border-left: 6rpx solid #7DB5A0; }
+.reader-card.didi   { border-left: 6rpx solid #E8956D; }
+.rc-avatar { font-size: 44rpx; flex-shrink: 0; }
+.rc-info { flex: 1; min-width: 0; }
+.rc-name {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #3D2B1F;
+}
+.rc-sub {
+  font-size: 22rpx;
+  color: #9E8B7A;
+  margin-top: 4rpx;
+}
+.rc-arrow {
+  font-size: 36rpx;
+  color: #D4C9BF;
+}
+
+/* 最近入库横向滚动 */
+.recent-books-scroll {
+  width: 100%;
+  margin-bottom: 8rpx;
+}
+.recent-books-row {
+  display: flex;
+  gap: 20rpx;
+  padding-bottom: 8rpx;
+  width: max-content;
+}
+.recent-book-item {
+  width: 160rpx;
+  flex-shrink: 0;
+}
+.recent-cover {
+  width: 100rpx;
+  height: 140rpx;
+  border-radius: 4rpx 12rpx 12rpx 4rpx;
+  margin: 0 auto 12rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10rpx;
+  box-shadow: 0 4rpx 14rpx rgba(0,0,0,0.18);
+}
+.recent-cover-text {
+  color: rgba(255,255,255,0.9);
+  font-size: 18rpx;
+  text-align: center;
+  line-height: 1.4;
+  word-break: break-all;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.recent-title {
+  font-size: 24rpx;
+  font-weight: 500;
+  color: #3D2B1F;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 4rpx;
+}
+.recent-author {
+  font-size: 20rpx;
+  color: #9E8B7A;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 悬浮按钮 FAB */
+.fab-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 90;
+}
+.fab-wrap {
+  position: fixed;
+  right: 40rpx;
+  bottom: calc(120rpx + env(safe-area-inset-bottom));
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.fab-main {
+  width: 110rpx;
+  height: 110rpx;
+  border-radius: 50%;
+  background: #7DB5A0;
+  color: #fff;
+  font-size: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6rpx 24rpx rgba(61,43,31,0.28);
+  transition: transform 0.25s ease;
+  line-height: 1;
+}
+.fab-main.fab-open {
+  transform: rotate(45deg);
+  background: #5A9C87;
+}
+.fab-sub-list {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 24rpx;
+  margin-bottom: 24rpx;
+}
+.fab-sub-item {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  animation: fabIn 0.2s ease;
+}
+@keyframes fabIn {
+  from { opacity: 0; transform: translateY(20rpx); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fab-sub-label {
+  background: rgba(255,255,255,0.96);
+  color: #3D2B1F;
+  font-size: 26rpx;
+  font-weight: 500;
+  padding: 12rpx 24rpx;
+  border-radius: 40rpx;
+  box-shadow: 0 2rpx 12rpx rgba(61,43,31,0.14);
+  white-space: nowrap;
+}
+.fab-sub-btn {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
+  box-shadow: 0 4rpx 16rpx rgba(61,43,31,0.18);
+}

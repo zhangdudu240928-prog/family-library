@@ -1,0 +1,164 @@
+<!-- 书籍详情 / 录入新书 / 编辑书籍 -->
+<view class="container">
+
+  <!-- 详情模式 -->
+  <block wx:if="{{mode === 'detail'}}">
+    <!-- 封面 + 基本信息 -->
+    <view class="detail-hero card">
+      <view class="detail-cover-wrap">
+        <view class="detail-cover" style="background:{{book.coverColor}}">
+          <text class="detail-cover-text">{{book.title}}</text>
+        </view>
+      </view>
+      <view class="detail-info">
+        <view class="detail-title">{{book.title}}</view>
+        <view class="detail-author">{{book.author || '—'}}</view>
+        <view wx:if="{{book.publisher || book.year}}" class="detail-pub">
+          {{book.publisher}}{{book.publisher && book.year ? ' · ' : ''}}{{book.year}}
+        </view>
+        <view class="detail-status-row">
+          <view class="status-badge status-{{book.status}}">{{statusText}}</view>
+          <view class="detail-category tag">{{book.category}}</view>
+        </view>
+        <view class="detail-readers-row">
+          <view
+            wx:for="{{book.forReaders}}"
+            wx:key="*this"
+            class="reader-avatar-chip"
+          >{{readerInfo[item].avatar}} {{readerInfo[item].name}}</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 标签 -->
+    <view wx:if="{{book.tags && book.tags.length}}" class="card">
+      <view class="section-title" style="margin-bottom:16rpx;">标签</view>
+      <view class="tags-wrap">
+        <view wx:for="{{book.tags}}" wx:key="*this" class="tag">{{item}}</view>
+      </view>
+    </view>
+
+    <!-- 简介 -->
+    <view wx:if="{{book.synopsis}}" class="card">
+      <view class="section-title" style="margin-bottom:12rpx;">简介</view>
+      <view class="synopsis-text">{{book.synopsis}}</view>
+    </view>
+
+    <!-- 阅读记录 -->
+    <view wx:if="{{bookLogs.length}}" class="card">
+      <view class="section-title" style="margin-bottom:16rpx;">阅读记录</view>
+      <view wx:for="{{bookLogs}}" wx:key="id" class="log-item">
+        <view class="log-reader-dot" style="background:{{item.readerColor}}25">{{item.readerAvatar}}</view>
+        <view class="log-content">
+          <view class="log-title">{{item.readerName}} · {{item.statusText}}</view>
+          <view class="log-meta">{{item.startDate}}{{item.endDate ? ' → ' + item.endDate : ''}}</view>
+          <view wx:if="{{item.note}}" class="log-note">"{{item.note}}"</view>
+          <view wx:if="{{item.rating}}" class="stars">{{item.starsText}}</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 操作按钮 -->
+    <view class="action-btns">
+      <button class="btn btn-green btn-block" bindtap="goAddLog">＋ 记录阅读</button>
+      <button class="btn btn-outline btn-block" style="margin-top:16rpx;" bindtap="switchToEdit">✏️ 编辑书籍</button>
+      <button class="btn btn-danger btn-block" style="margin-top:16rpx;" bindtap="deleteBook">🗑 删除</button>
+    </view>
+  </block>
+
+  <!-- 录入/编辑模式 -->
+  <block wx:if="{{mode === 'edit'}}">
+    <view class="card">
+      <view class="form-group">
+        <view class="form-label">书名 <text class="required">*</text></view>
+        <input class="form-input" placeholder="书的名字" value="{{form.title}}" bindinput="onInput" data-field="title" />
+      </view>
+
+      <view class="form-row">
+        <view class="form-group half">
+          <view class="form-label">作者</view>
+          <input class="form-input" placeholder="作者姓名" value="{{form.author}}" bindinput="onInput" data-field="author" />
+        </view>
+        <view class="form-group half">
+          <view class="form-label">分类</view>
+          <picker bindchange="onCategoryChange" value="{{categoryIndex}}" range="{{categories}}">
+            <view class="form-picker">{{form.category || '请选择'}} ▾</view>
+          </picker>
+        </view>
+      </view>
+
+      <view class="form-row">
+        <view class="form-group half">
+          <view class="form-label">出版社</view>
+          <input class="form-input" placeholder="出版社" value="{{form.publisher}}" bindinput="onInput" data-field="publisher" />
+        </view>
+        <view class="form-group half">
+          <view class="form-label">出版年份</view>
+          <input class="form-input" placeholder="2024" value="{{form.year}}" bindinput="onInput" data-field="year" type="number" />
+        </view>
+      </view>
+
+      <view class="form-group">
+        <view class="form-label">ISBN（可选）</view>
+        <input class="form-input" placeholder="978-…" value="{{form.isbn}}" bindinput="onInput" data-field="isbn" />
+      </view>
+
+      <view class="form-group">
+        <view class="form-label">标签（点击添加）</view>
+        <view class="tags-wrap">
+          <view wx:for="{{form.tags}}" wx:key="*this" class="tag tag-removable">
+            {{item}}<text class="tag-remove" bindtap="removeTag" data-index="{{index}}">✕</text>
+          </view>
+        </view>
+        <view class="tag-input-row">
+          <input
+            class="form-input"
+            placeholder="输入标签后点击「添加」"
+            value="{{tagInput}}"
+            bindinput="onTagInput"
+            style="flex:1;"
+          />
+          <view class="btn btn-ghost btn-sm" bindtap="addTag">添加</view>
+        </view>
+      </view>
+
+      <view class="form-group">
+        <view class="form-label">简介（可选）</view>
+        <textarea
+          class="form-textarea"
+          placeholder="简单描述这本书…"
+          value="{{form.synopsis}}"
+          bindinput="onInput"
+          data-field="synopsis"
+          auto-height
+        />
+      </view>
+
+      <view class="form-group">
+        <view class="form-label">适合谁读</view>
+        <view class="readers-check-row">
+          <view
+            wx:for="{{readerOptions}}"
+            wx:key="id"
+            class="reader-check-btn {{form.forReaders.indexOf(item.id) !== -1 ? 'checked' : ''}}"
+            bindtap="toggleReader"
+            data-id="{{item.id}}"
+          >{{item.avatar}} {{item.name}}</view>
+          <view
+            class="reader-check-btn {{form.forReaders.indexOf('all') !== -1 ? 'checked' : ''}}"
+            bindtap="toggleReader"
+            data-id="all"
+          >👨‍👩‍👧‍👦 全家</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="action-btns">
+      <button class="btn btn-primary btn-block {{saving ? 'disabled' : ''}}" bindtap="saveBook">
+        {{saving ? '保存中…' : (isNew ? '保存入库 ✓' : '更新书籍 ✓')}}
+      </button>
+      <button wx:if="{{!isNew}}" class="btn btn-outline btn-block" style="margin-top:16rpx;" bindtap="cancelEdit">取消编辑</button>
+    </view>
+  </block>
+
+</view>

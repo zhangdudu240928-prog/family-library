@@ -1,0 +1,144 @@
+/* 藏书阁 */
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 16rpx 24rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(61,43,31,0.06);
+  gap: 12rpx;
+}
+.search-icon { font-size: 32rpx; flex-shrink: 0; }
+.search-input {
+  flex: 1;
+  font-size: 28rpx;
+  color: #3D2B1F;
+  height: 48rpx;
+  line-height: 48rpx;
+}
+.search-clear {
+  font-size: 28rpx;
+  color: #B8A99A;
+  padding: 0 8rpx;
+  flex-shrink: 0;
+}
+
+.filter-scroll {
+  width: 100%;
+  margin-bottom: 20rpx;
+}
+.filter-row {
+  display: flex;
+  gap: 12rpx;
+  width: max-content;
+  padding-bottom: 4rpx;
+}
+.ftab {
+  padding: 10rpx 24rpx;
+  background: #fff;
+  border-radius: 20rpx;
+  font-size: 24rpx;
+  color: #9E8B7A;
+  white-space: nowrap;
+  box-shadow: 0 1rpx 8rpx rgba(61,43,31,0.05);
+  flex-shrink: 0;
+}
+.ftab.active {
+  background: #3D2B1F;
+  color: #FAF6EF;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-bottom: 20rpx;
+}
+.view-toggle {
+  display: flex;
+  background: #F5EFE8;
+  border-radius: 10rpx;
+  padding: 4rpx;
+}
+.view-btn {
+  padding: 8rpx 16rpx;
+  border-radius: 8rpx;
+  font-size: 28rpx;
+  color: #9E8B7A;
+}
+.view-btn.active {
+  background: #fff;
+  color: #3D2B1F;
+  box-shadow: 0 1rpx 6rpx rgba(61,43,31,0.1);
+}
+.toolbar-count {
+  flex: 1;
+  font-size: 24rpx;
+  color: #B8A99A;
+}
+
+/* 书籍网格 */
+.books-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20rpx;
+}
+.book-card {
+  width: calc(50% - 10rpx);
+  background: #fff;
+  border-radius: 16rpx;
+  overflow: hidden;
+  box-shadow: 0 2rpx 12rpx rgba(61,43,31,0.07);
+}
+.book-cover-area {
+  height: 180rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.book-cover-inner {
+  width: 80rpx;
+  height: 120rpx;
+  border-radius: 4rpx 12rpx 12rpx 4rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8rpx;
+  box-shadow: 0 4rpx 14rpx rgba(0,0,0,0.18);
+}
+.book-cover-text {
+  color: rgba(255,255,255,0.92);
+  font-size: 18rpx;
+  text-align: center;
+  line-height: 1.4;
+  word-break: break-all;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.book-card-info { padding: 12rpx 20rpx 20rpx; }
+.book-card-title {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #3D2B1F;
+  margin-bottom: 4rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.book-card-author {
+  font-size: 22rpx;
+  color: #9E8B7A;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 8rpx;
+}
+.book-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4rpx;
+}
